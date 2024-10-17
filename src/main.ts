@@ -1,5 +1,16 @@
 import { createApp } from 'vue'
-import './style.css'
+import PrimeVue from 'primevue/config';
+import Material from '@primevue/themes/material';
 import App from './App.vue'
 
-createApp(App).mount('#app')
+const app = createApp(App)
+app.use(PrimeVue, {
+    theme: {
+        preset: Material,
+        options: {
+            darkModeSelector: false,
+        }
+    }
+});
+
+app.mount('#app')

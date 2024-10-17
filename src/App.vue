@@ -1,12 +1,14 @@
 <template>
-  <div> 
-    Eternity
-  </div>
+  <div />
 </template>
 
 <script lang="ts">
 
-export default {}
+export default {
+  components: {
+    
+  }
+}
 </script>
 
 <style scoped>
