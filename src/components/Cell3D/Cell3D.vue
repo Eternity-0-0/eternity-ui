@@ -64,14 +64,15 @@ export default {
       this.renderer.setSize(width, height);
       container.appendChild(this.renderer.domElement);
       console.log('SCENE', this.scene)
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+      const ambientLight = new THREE.AmbientLight(0xffffff, 1);
       this.scene.add(ambientLight);
+      this.scene.background = new THREE.Color( 0xe1e1e1 );
 
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+
+      const directionalLight = new THREE.DirectionalLight(0xfffff, 0.7);
       directionalLight.position.set(0, 10, 10);
       this.scene.add(directionalLight);
 
-      // Initialize OrbitControls
       this.controls = markRaw(new OrbitControls(this.camera, this.renderer.domElement));
       this.controls.enableDamping = true;
       this.controls.dampingFactor = 0.25;
@@ -190,8 +191,7 @@ export default {
 <style scoped>
   .scene-container {
   width: 100%;
-  height: 900px;
-  background-color: #f0f0f0;
+  height: 100%;
 }
 </style>
   

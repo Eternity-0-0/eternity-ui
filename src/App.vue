@@ -1,23 +1,27 @@
 <template>
-  <div id="app">
-    <Cell3D />
+  <div class="app-root">
+    <AppHeader />
+    <CellViewer />
   </div>
 </template>
 
 <script lang="ts">
-import Cell3D from './components/Cell3D/Cell3D.vue';
-
+import AppHeader from './components/AppHeader/AppHeader.vue';
+import CellViewer from './views/CellViewer/CellViewer.vue';
 
 export default {
   components: {
-    Cell3D
+    CellViewer, AppHeader
   }
 }
 </script>
 
 <style scoped>
-#app {
-  width: 100vw;
+.app-root {
+  padding: 16px;
+  display: grid;
   height: 100vh;
+  grid-template-rows: 60px auto;
+  row-gap: 8px;
 }
 </style>

@@ -380,6 +380,13 @@
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.15.tgz#596a1747233694d50f6ad8a7869fcb6f56cf5841"
   integrity sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==
 
+"@types/node@^22.7.6":
+  version "22.7.6"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.7.6.tgz#3ec3e2b071e136cd11093c19128405e1d1f92f33"
+  integrity sha512-/d7Rnj0/ExXDMcioS78/kf1lMzYk4BZV8MZGTBKzTGZ6/406ukkbYlIsZmMPhcR5KlkunDHQLrtAVmSq7r+mSw==
+  dependencies:
+    undici-types "~6.19.2"
+
 "@types/stats.js@*":
   version "0.17.3"
   resolved "https://registry.yarnpkg.com/@types/stats.js/-/stats.js-0.17.3.tgz#705446e12ce0fad618557dd88236f51148b7a935"
@@ -1425,6 +1432,11 @@ typescript@^5.5.3:
   version "5.6.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.6.3.tgz#5f3449e31c9d94febb17de03cc081dd56d81db5b"
   integrity sha512-hjcS1mhfuyi4WW8IWtjP7brDrG2cuDZukyrYrSauoXGNgx0S7zceP07adYkJycEr56BOUTNPzbInooiN3fn1qw==
+
+undici-types@~6.19.2:
+  version "6.19.8"
+  resolved "https://registry.yarnpkg.com/undici-types/-/undici-types-6.19.8.tgz#35111c9d1437ab83a7cdc0abae2f26d88eda0a02"
+  integrity sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==
 
 uri-js@^4.2.2:
   version "4.4.1"
