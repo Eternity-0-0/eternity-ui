@@ -1,15 +1,13 @@
-<template>
-  <div />
-</template>
-
 <script lang="ts">
 
 export default {
-  components: {
-    
-  }
+  components: {}
 }
 </script>
+
+<template>
+  <div />
+</template>
 
 <style scoped>
 
