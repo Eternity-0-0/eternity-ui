@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router"
-import CellView from "../views/CellView/CellView.vue"
-import AppLayout from "../components/AppLayout/AppLayout.vue"
+import CellView from "@views/CellView/CellView.vue"
+import AppLayout from "@components/AppLayout/AppLayout.vue"
 
 const routes = [
     {

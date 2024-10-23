@@ -1,12 +1,18 @@
 <script lang="ts">
+import EntityWiki from '@components/EntityWiki/EntityWiki.vue'
+
 export default {
-  components: {}
+  components: {EntityWiki}
 }
+
 </script>
 
 <template>
   <div>
-    Cell view
+    <div>Cell</div>
+    <div>
+      <EntityWiki />
+    </div>
   </div>
 </template>
 
