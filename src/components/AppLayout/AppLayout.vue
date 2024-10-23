@@ -10,7 +10,7 @@ export default {
 <template>
   <div class="h-screen bg-slate-100">
     <AppHeader />
-    <div class="max-w-[1280px] mx-auto w-full px-4">
+    <div class="max-w-[1280px] mx-auto w-full px-4 h-[calc(100vh-88px)] pt-4">
       <RouterView />
     </div>
   </div>

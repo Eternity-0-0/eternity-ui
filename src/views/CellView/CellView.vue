@@ -8,7 +8,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div class="grid grid-cols-2">
     <div>Cell</div>
     <div>
       <EntityWiki />

@@ -5,8 +5,17 @@ export default {
 </script>
 
 <template>
-  <div>
-    Entity wiki
+  <div class="w-full border p-4 rounded-md">
+    <div>
+      <span class="text-lg font-medium">
+        Enity Name
+      </span>
+    </div>
+    <div>
+      <span>
+        Properties
+      </span>
+    </div>
   </div>
 </template>
 
