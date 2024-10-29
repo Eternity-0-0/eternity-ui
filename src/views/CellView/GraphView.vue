@@ -92,7 +92,7 @@ onMounted(async () => {
       }
     ],
     layout: {
-      name: 'cose'
+      name: 'klay'
     }
   })
 })
