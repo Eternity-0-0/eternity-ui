@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import cytoscape from 'cytoscape'
+import klay from 'cytoscape-klay';
+
+cytoscape.use(klay);
+
 
 const container = ref<HTMLElement | null>(null)
 let cy: cytoscape.Core | null = null
 
 interface Node {
-  name: string
+  id: string
   nice_name: string
   type: string
 }
@@ -32,7 +36,7 @@ onMounted(async () => {
   const elements = [
     ...data.nodes.map(node => ({
       data: {
-        id: node.name,
+        id: node.id,
         label: node.nice_name,
         type: node.type
       }
