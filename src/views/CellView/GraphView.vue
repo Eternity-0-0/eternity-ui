@@ -57,11 +57,12 @@ onMounted(async () => {
       {
         selector: 'node[type="entity"]',
         style: {
-          'background-color': '#666',
+          'background-color': '#ffffff',
+          'border-width': '1px',
+          'border-color': '#666',
           'label': 'data(label)',
-          'width': 'label',
-          'height': 'label',
-          'padding': '20px',
+          'width': '120px',
+          'height': '80px',
           'text-wrap': 'wrap',
           'text-max-width': '100px',
           'shape': 'ellipse',
@@ -72,14 +73,15 @@ onMounted(async () => {
       {
         selector: 'node[type="process"]',
         style: {
-          'background-color': '#666',
+          'background-color': '#ffffff',
+          'border-width': '1px', 
+          'border-color': '#666',
           'label': 'data(label)',
-          'width': 'label',
-          'height': 'label',
-          'padding': '20px',
+          'width': '150px',
+          'height': '60px',
           'text-wrap': 'wrap',
           'text-max-width': '100px',
-          'shape': 'round-rectangle',
+          'shape': 'roundrectangle',
           'text-valign': 'center',
           'text-halign': 'center'
         }
