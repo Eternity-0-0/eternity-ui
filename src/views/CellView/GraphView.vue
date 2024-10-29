@@ -51,10 +51,33 @@ onMounted(async () => {
     elements,
     style: [
       {
-        selector: 'node',
+        selector: 'node[type="entity"]',
         style: {
           'background-color': '#666',
-          'label': 'data(label)'
+          'label': 'data(label)',
+          'width': 'label',
+          'height': 'label',
+          'padding': '20px',
+          'text-wrap': 'wrap',
+          'text-max-width': '100px',
+          'shape': 'ellipse',
+          'text-valign': 'center',
+          'text-halign': 'center'
+        }
+      },
+      {
+        selector: 'node[type="process"]',
+        style: {
+          'background-color': '#666',
+          'label': 'data(label)',
+          'width': 'label',
+          'height': 'label',
+          'padding': '20px',
+          'text-wrap': 'wrap',
+          'text-max-width': '100px',
+          'shape': 'round-rectangle',
+          'text-valign': 'center',
+          'text-halign': 'center'
         }
       },
       {
@@ -62,7 +85,9 @@ onMounted(async () => {
         style: {
           'width': 3,
           'line-color': '#ccc',
-          'curve-style': 'bezier'
+          'curve-style': 'bezier',
+          'target-arrow-shape': 'triangle',
+          'target-arrow-color': '#ccc'
         }
       }
     ],
