@@ -2,8 +2,11 @@
 import { onMounted, ref } from 'vue'
 import cytoscape from 'cytoscape'
 import klay from 'cytoscape-klay';
+import elk from 'cytoscape-elk';
+
 
 cytoscape.use(klay);
+cytoscape.use(elk);
 
 
 const container = ref<HTMLElement | null>(null)
@@ -98,7 +101,18 @@ onMounted(async () => {
       }
     ],
     layout: {
-      name: 'klay'
+      // name: 'klay'
+      // name: 'dagre'
+      name: 'elk',
+      elk: {
+        algorithm: 'layered',
+        'elk.layered.spacing.nodeNodeBetweenLayers': 50,
+        'elk.layered.spacing.nodeNode': 50,
+        'elk.edgeRouting': 'ORTHOGONAL',
+        'elk.edges.orthogonalRouting': true,
+        'elk.edges.edgeRouting': 'ORTHOGONAL',
+        'elk.edges.orthogonal': true
+      }
     }
   })
 })
