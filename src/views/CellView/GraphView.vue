@@ -37,10 +37,10 @@ onMounted(async () => {
     layoutOptions: {
       'elk.algorithm': 'layered',
       'elk.direction': 'DOWN',
-      'elk.spacing.nodeNode': '120',  // Increased node spacing for clarity
-      'elk.layered.spacing.edgeNode': '50',  // Edge-node spacing
-      'elk.spacing.edgeEdge': '50',  // Increased spacing between edges
-      'elk.edgeRouting': 'ORTHOGONAL'  // Make edges more readable
+      // 'elk.spacing.nodeNode': '120',  // Increased node spacing for clarity
+      // 'elk.layered.spacing.edgeNode': '50',  // Edge-node spacing
+      // 'elk.spacing.edgeEdge': '50',  // Increased spacing between edges
+      // 'elk.edgeRouting': 'ORTHOGONAL'  // Make edges more readable
     },
     children: data.nodes.map(node => ({
       id: node.id,
@@ -100,23 +100,34 @@ onMounted(async () => {
     .attr('rx', 10)
     .attr('ry', 10)
 
-  node.append('circle')
+  node.append('ellipse')
     .filter(d => (d as any).type === 'entity')
-    .attr('r', 40)
+    .attr('rx', 60)
+    .attr('ry', 30)
     .attr('fill', '#ffffff')
     .attr('stroke', '#666')
     .attr('stroke-width', 1.5)
 
-  node.append('text')
+  // Add foreignObject for wrapped text
+  const textContainer = node.append('foreignObject')
+    .attr('x', d => (d as any).type === 'process' ? -70 : -55)
+    .attr('y', d => (d as any).type === 'process' ? -25 : -35)
+    .attr('width', d => (d as any).type === 'process' ? 140 : 110)
+    .attr('height', d => (d as any).type === 'process' ? 50 : 70)
+
+  textContainer.append('xhtml:div')
+    .style('width', '100%')
+    .style('height', '100%')
+    .style('display', 'flex')
+    .style('align-items', 'center')
+    .style('justify-content', 'center')
+    .style('text-align', 'center')
+    .style('font-size', '14px')
+    .style('word-wrap', 'break-word')
     .text(d => {
       const foundNode = data.nodes.find(n => n.id === d.id)
       return foundNode ? foundNode.nice_name : ''
     })
-    .attr('x', 0)
-    .attr('y', 5)
-    .attr('text-anchor', 'middle')
-    .style('font-size', '12px')
-    .style('pointer-events', 'none')
 
   // Set edge positions using D3 based on node coordinates
   link
