@@ -15,8 +15,9 @@ const routes = [
     {
         path: '/graph', component: AppLayout, children: [
             {
-                path: '/graph',
-                component: GraphView
+                path: ':graphName',
+                component: GraphView,
+                props: true
             }
         ]
     },

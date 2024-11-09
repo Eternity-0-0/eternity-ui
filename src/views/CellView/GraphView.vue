@@ -21,12 +21,17 @@ interface GraphData {
   edges: Edge[]
 }
 
+// Add props definition
+const props = defineProps<{
+  graphName: string
+}>()
+
 const container = ref<HTMLElement | null>(null)
 
 onMounted(async () => {
   if (!container.value) return
 
-  const response = await fetch('http://localhost:8000/graphs/carbohydrates_catabolism')
+  const response = await fetch(`http://localhost:8000/graphs/${props.graphName}`)
   const data: GraphData = await response.json()
 
   const elk = new ELK()
