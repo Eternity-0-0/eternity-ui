@@ -1,16 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import cytoscape from 'cytoscape'
-import klay from 'cytoscape-klay';
-import elk from 'cytoscape-elk';
-
-
-cytoscape.use(klay);
-cytoscape.use(elk);
-
-
-const container = ref<HTMLElement | null>(null)
-let cy: cytoscape.Core | null = null
+import * as d3 from 'd3'
+import ELK from 'elkjs/lib/elk.bundled.js'
 
 interface Node {
   id: string
@@ -30,87 +21,109 @@ interface GraphData {
   edges: Edge[]
 }
 
+const container = ref<HTMLElement | null>(null)
+
 onMounted(async () => {
   if (!container.value) return
 
-  // const response = await fetch('http://localhost:8000/graphs/citric_acid_cycle')
   const response = await fetch('http://localhost:8000/graphs/carbohydrates_catabolism')
   const data: GraphData = await response.json()
 
-  const elements = [
-    ...data.nodes.map(node => ({
-      data: {
-        id: node.id,
-        label: node.nice_name,
-        type: node.type
-      }
-    })),
-    ...data.edges.map(edge => ({
-      data: {
-        id: `${edge.source}-${edge.target}`,
-        source: edge.source,
-        target: edge.target
-      }
-    }))
-  ]
+  const elk = new ELK()
 
-  cy = cytoscape({
-    container: container.value,
-    elements,
-    style: [
-      {
-        selector: 'node[type="entity"]',
-        style: {
-          'background-color': '#ffffff',
-          'border-width': '1px',
-          'border-color': '#666',
-          'label': 'data(label)',
-          'width': '120px',
-          'height': '80px',
-          'text-wrap': 'wrap',
-          'text-max-width': '100px',
-          'shape': 'ellipse',
-          'text-valign': 'center',
-          'text-halign': 'center'
-        }
-      },
-      {
-        selector: 'node[type="process"]',
-        style: {
-          'background-color': '#ffffff',
-          'border-width': '1px', 
-          'border-color': '#666',
-          'label': 'data(label)',
-          'width': '150px',
-          'height': '60px',
-          'text-wrap': 'wrap',
-          'text-max-width': '100px',
-          'shape': 'roundrectangle',
-          'text-valign': 'center',
-          'text-halign': 'center'
-        }
-      },
-      {
-        selector: 'edge',
-        style: {
-          'width': 3,
-          'line-color': '#ccc',
-          'curve-style': 'straight',  // Set to straight for better alignment with orthogonal layouts
-          'target-arrow-shape': 'triangle',
-          'target-arrow-color': '#ccc'
-        }
-      }
-    ],
-    layout: {
-      // name: 'klay'
-      // name: 'dagre'
-      name: 'elk',
-      elk: {
-        algorithm: 'layered',
-        'elk.direction': 'DOWN', // Sets top-down direction
-      }
-    }
+  // Prepare ELK-compatible data structure
+  const elkGraph = {
+    id: 'root',
+    layoutOptions: {
+      'elk.algorithm': 'layered',
+      'elk.direction': 'DOWN',
+      'elk.spacing.nodeNode': '120',  // Increased node spacing for clarity
+      'elk.layered.spacing.edgeNode': '50',  // Edge-node spacing
+      'elk.spacing.edgeEdge': '50',  // Increased spacing between edges
+      'elk.edgeRouting': 'ORTHOGONAL'  // Make edges more readable
+    },
+    children: data.nodes.map(node => ({
+      id: node.id,
+      width: 140,  // Consistent width for improved alignment
+      height: 80,  // Consistent height
+      type: node.type,
+      label: node.nice_name
+    })),
+    edges: data.edges.map(edge => ({
+      id: `${edge.source}-${edge.target}`,
+      sources: [edge.source],
+      targets: [edge.target]
+    }))
+  }
+
+
+  // Compute layout with ELK for node positions only
+  const elkLayout = await elk.layout(elkGraph)
+
+  const width = container.value.clientWidth
+  const height = container.value.clientHeight
+
+  const svg = d3.select(container.value)
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .append('g')
+    .attr('transform', `translate(${width/2 - elkLayout.width!/2},20)`)
+
+  const nodePositions = new Map<string, { x: number; y: number }>()
+  elkLayout.children?.forEach(node => {
+    nodePositions.set(node.id, { x: node.x!, y: node.y! })
   })
+
+  const link = svg.selectAll('.link')
+    .data(data.edges)
+    .enter().append('line')
+    .attr('class', 'link')
+    .attr('stroke', '#aaa')
+    .attr('stroke-width', 2)
+
+  const node = svg.selectAll('.node')
+    .data(elkLayout.children!)
+    .enter().append('g')
+    .attr('class', 'node')
+    .attr('transform', d => `translate(${d.x},${d.y})`)
+
+  node.append('rect')
+    .filter(d => (d as any).type === 'process')
+    .attr('width', 150)
+    .attr('height', 60)
+    .attr('x', -75)
+    .attr('y', -30)
+    .attr('fill', '#ffffff')
+    .attr('stroke', '#666')
+    .attr('stroke-width', 1.5)
+    .attr('rx', 10)
+    .attr('ry', 10)
+
+  node.append('circle')
+    .filter(d => (d as any).type === 'entity')
+    .attr('r', 40)
+    .attr('fill', '#ffffff')
+    .attr('stroke', '#666')
+    .attr('stroke-width', 1.5)
+
+  node.append('text')
+    .text(d => {
+      const foundNode = data.nodes.find(n => n.id === d.id)
+      return foundNode ? foundNode.nice_name : ''
+    })
+    .attr('x', 0)
+    .attr('y', 5)
+    .attr('text-anchor', 'middle')
+    .style('font-size', '12px')
+    .style('pointer-events', 'none')
+
+  // Set edge positions using D3 based on node coordinates
+  link
+    .attr('x1', d => nodePositions.get(d.source)?.x || 0)
+    .attr('y1', d => nodePositions.get(d.source)?.y || 0)
+    .attr('x2', d => nodePositions.get(d.target)?.x || 0)
+    .attr('y2', d => nodePositions.get(d.target)?.y || 0)
 })
 </script>
 
@@ -122,6 +135,7 @@ onMounted(async () => {
 .graph-container {
   width: 100%;
   height: 100%;
-  min-height: 500px;
+  min-height: 800px;
+  background-color: #f5f8fb;
 }
 </style>
