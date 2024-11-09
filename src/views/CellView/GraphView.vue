@@ -33,6 +33,7 @@ interface GraphData {
 onMounted(async () => {
   if (!container.value) return
 
+  // const response = await fetch('http://localhost:8000/graphs/citric_acid_cycle')
   const response = await fetch('http://localhost:8000/graphs/carbohydrates_catabolism')
   const data: GraphData = await response.json()
 
@@ -94,7 +95,7 @@ onMounted(async () => {
         style: {
           'width': 3,
           'line-color': '#ccc',
-          'curve-style': 'bezier',
+          'curve-style': 'straight',  // Set to straight for better alignment with orthogonal layouts
           'target-arrow-shape': 'triangle',
           'target-arrow-color': '#ccc'
         }
@@ -106,12 +107,7 @@ onMounted(async () => {
       name: 'elk',
       elk: {
         algorithm: 'layered',
-        'elk.layered.spacing.nodeNodeBetweenLayers': 50,
-        'elk.layered.spacing.nodeNode': 50,
-        'elk.edgeRouting': 'ORTHOGONAL',
-        'elk.edges.orthogonalRouting': true,
-        'elk.edges.edgeRouting': 'ORTHOGONAL',
-        'elk.edges.orthogonal': true
+        'elk.direction': 'DOWN', // Sets top-down direction
       }
     }
   })
