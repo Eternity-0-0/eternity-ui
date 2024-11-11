@@ -7,7 +7,7 @@ interface Node {
   id: string
   nice_name: string
   type: string
-  group: string
+  group?: string
 }
 
 interface Edge {
@@ -37,16 +37,7 @@ onMounted(async () => {
 
   const elk = new ELK()
 
-  // Group nodes by their group property
-  const groupedNodes = data.nodes.reduce((acc, node) => {
-    if (!acc[node.group]) {
-      acc[node.group] = []
-    }
-    acc[node.group].push(node)
-    return acc
-  }, {} as Record<string, Node[]>)
-
-  // Prepare ELK-compatible data structure with clustering
+  // Prepare ELK-compatible data structure, with optional clustering
   const elkGraph = {
     id: 'root',
     layoutOptions: {
@@ -55,24 +46,13 @@ onMounted(async () => {
       'elk.spacing.nodeNode': '50',
       'elk.padding': '[top=50,left=50,bottom=50,right=50]'
     },
-    children: Object.entries(groupedNodes).map(([groupName, nodes]) => ({
-      id: `cluster_${groupName}`,
-      layoutOptions: {
-        'elk.padding': '[top=20,left=20,bottom=20,right=20]'
-      },
-      children: nodes.map(node => ({
-        id: node.id,
-        width: 140,
-        height: 80,
-        type: node.type,
-        label: node.nice_name,
-        group: node.group
-      })),
-      labels: [{
-        text: groupName,
-        width: 100,
-        height: 30
-      }]
+    children: data.nodes.map(node => ({
+      id: node.id,
+      width: 140,
+      height: 80,
+      type: node.type,
+      label: node.nice_name,
+      group: node.group
     })),
     edges: data.edges.map(edge => ({
       id: `${edge.source}-${edge.target}`,
@@ -84,16 +64,12 @@ onMounted(async () => {
   // Compute layout with ELK for node positions
   const elkLayout = await elk.layout(elkGraph)
 
-  // Create node position map from ELK layout, accounting for cluster positions
+  // Create node position map from ELK layout
   const nodePositions = new Map<string, { x: number; y: number }>()
-  elkLayout.children?.forEach(cluster => {
-    const clusterX = cluster.x || 0
-    const clusterY = cluster.y || 0
-    cluster.children?.forEach(node => {
-      nodePositions.set(node.id, {
-        x: clusterX + (node.x || 0),
-        y: clusterY + (node.y || 0)
-      })
+  elkLayout.children?.forEach(node => {
+    nodePositions.set(node.id, {
+      x: node.x || 0,
+      y: node.y || 0
     })
   })
 
@@ -105,7 +81,7 @@ onMounted(async () => {
       ...data.nodes.map(node => ({
         data: {
           id: node.id,
-          label: `${node.nice_name}\n(${node.group})`,
+          label: node.group ? `${node.nice_name}\n(${node.group})` : node.nice_name,
           type: node.type,
           group: node.group
         },
@@ -145,6 +121,23 @@ onMounted(async () => {
         selector: 'node[type="entity"]',
         style: {
           'shape': 'ellipse',
+          'background-color': '#ffffff',
+          'border-color': '#666',
+          'border-width': 1.5,
+          'width': 120,
+          'height': 60,
+          'label': 'data(label)',
+          'text-wrap': 'wrap',
+          'text-max-width': 110,
+          'text-valign': 'center',
+          'text-halign': 'center',
+          'font-size': '14px'
+        }
+      },
+      {
+        selector: 'node[type="effect"]',
+        style: {
+          'shape': 'diamond',
           'background-color': '#ffffff',
           'border-color': '#666',
           'border-width': 1.5,
