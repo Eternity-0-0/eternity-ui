@@ -180,14 +180,14 @@ onMounted(async () => {
           'background-color': '#ffffff',
           'border-color': '#666',
           'border-width': 1.5,
-          'width': 150,
+          'width': 140,
           'height': 60,
           'label': 'data(label)',
           'text-wrap': 'wrap',
-          'text-max-width': 140,
+          'text-max-width': 130,
           'text-valign': 'center',
           'text-halign': 'center',
-          'font-size': '14px'
+          'font-size': '16px'
         }
       },
       {
@@ -197,14 +197,14 @@ onMounted(async () => {
           'background-color': '#ffffff',
           'border-color': '#666',
           'border-width': 1.5,
-          'width': 120,
+          'width': 140,
           'height': 60,
           'label': 'data(label)',
           'text-wrap': 'wrap',
-          'text-max-width': 110,
+          'text-max-width': 130,
           'text-valign': 'center',
           'text-halign': 'center',
-          'font-size': '14px'
+          'font-size': '16px'
         }
       },
       {
@@ -214,20 +214,20 @@ onMounted(async () => {
           'background-color': '#ffffff',
           'border-color': '#666',
           'border-width': 1.5,
-          'width': 120,
+          'width': 140,
           'height': 60,
           'label': 'data(label)',
           'text-wrap': 'wrap',
-          'text-max-width': 110,
+          'text-max-width': 130,
           'text-valign': 'center',
           'text-halign': 'center',
-          'font-size': '14px'
+          'font-size': '16px'
         }
       },
       {
         selector: 'edge',
         style: {
-          'width': 2,
+          'width': 1.0,
           'line-color': '#aaa',
           'curve-style': 'bezier',
           'target-arrow-shape': 'triangle',
