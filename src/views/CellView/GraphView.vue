@@ -210,7 +210,7 @@ onMounted(async () => {
       {
         selector: 'node[type="effect"]',
         style: {
-          'shape': 'diamond',
+          'shape': 'cut-rectangle',
           'background-color': '#ffffff',
           'border-color': '#666',
           'border-width': 1.5,
