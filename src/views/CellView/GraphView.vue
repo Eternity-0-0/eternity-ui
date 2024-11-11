@@ -48,7 +48,12 @@ onMounted(async () => {
       'elk.direction': 'RIGHT',
       'elk.spacing.nodeNode': '50',
       'elk.padding': '[top=50,left=50,bottom=50,right=50]',
-      'elk.hierarchyHandling': 'INCLUDE_CHILDREN'
+      'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
+      'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
+      'elk.edgeRouting': 'POLYLINE',
+      'elk.layered.layering.strategy': 'NETWORK_SIMPLEX',
+      // 'elk.layered.layering.strategy': 'LONGEST_PATH',
+      'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
     },
     children: [
       // Add group nodes first
