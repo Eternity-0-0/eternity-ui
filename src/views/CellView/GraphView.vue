@@ -8,6 +8,7 @@ interface Node {
   nice_name: string
   type: string
   group?: string
+  status?: string
 }
 
 interface Edge {
@@ -136,7 +137,7 @@ onMounted(async () => {
       ...data.nodes.map(node => ({
         data: {
           id: node.id,
-          label: node.group ? `${node.nice_name}\n(${node.group})` : node.nice_name,
+          label: node.status ? `${node.nice_name}: ${node.status}` : node.nice_name,
           type: node.type,
           group: node.group,
           parent: node.group ? `group-${node.group}` : undefined
