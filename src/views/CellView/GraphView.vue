@@ -7,6 +7,7 @@ interface Node {
   id: string
   nice_name: string
   type: string
+  group: string
 }
 
 interface Edge {
@@ -36,19 +37,42 @@ onMounted(async () => {
 
   const elk = new ELK()
 
-  // Prepare ELK-compatible data structure
+  // Group nodes by their group property
+  const groupedNodes = data.nodes.reduce((acc, node) => {
+    if (!acc[node.group]) {
+      acc[node.group] = []
+    }
+    acc[node.group].push(node)
+    return acc
+  }, {} as Record<string, Node[]>)
+
+  // Prepare ELK-compatible data structure with clustering
   const elkGraph = {
     id: 'root',
     layoutOptions: {
       'elk.algorithm': 'layered',
       'elk.direction': 'DOWN',
+      'elk.spacing.nodeNode': '50',
+      'elk.padding': '[top=50,left=50,bottom=50,right=50]'
     },
-    children: data.nodes.map(node => ({
-      id: node.id,
-      width: 140,
-      height: 80,
-      type: node.type,
-      label: node.nice_name
+    children: Object.entries(groupedNodes).map(([groupName, nodes]) => ({
+      id: `cluster_${groupName}`,
+      layoutOptions: {
+        'elk.padding': '[top=20,left=20,bottom=20,right=20]'
+      },
+      children: nodes.map(node => ({
+        id: node.id,
+        width: 140,
+        height: 80,
+        type: node.type,
+        label: node.nice_name,
+        group: node.group
+      })),
+      labels: [{
+        text: groupName,
+        width: 100,
+        height: 30
+      }]
     })),
     edges: data.edges.map(edge => ({
       id: `${edge.source}-${edge.target}`,
@@ -60,10 +84,17 @@ onMounted(async () => {
   // Compute layout with ELK for node positions
   const elkLayout = await elk.layout(elkGraph)
 
-  // Create node position map from ELK layout
+  // Create node position map from ELK layout, accounting for cluster positions
   const nodePositions = new Map<string, { x: number; y: number }>()
-  elkLayout.children?.forEach(node => {
-    nodePositions.set(node.id, { x: node.x!, y: node.y! })
+  elkLayout.children?.forEach(cluster => {
+    const clusterX = cluster.x || 0
+    const clusterY = cluster.y || 0
+    cluster.children?.forEach(node => {
+      nodePositions.set(node.id, {
+        x: clusterX + (node.x || 0),
+        y: clusterY + (node.y || 0)
+      })
+    })
   })
 
   // Initialize Cytoscape
@@ -74,8 +105,9 @@ onMounted(async () => {
       ...data.nodes.map(node => ({
         data: {
           id: node.id,
-          label: node.nice_name,
-          type: node.type
+          label: `${node.nice_name}\n(${node.group})`,
+          type: node.type,
+          group: node.group
         },
         position: {
           x: nodePositions.get(node.id)?.x || 0,
