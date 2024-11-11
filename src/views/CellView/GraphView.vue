@@ -37,23 +37,47 @@ onMounted(async () => {
 
   const elk = new ELK()
 
-  // Prepare ELK-compatible data structure, with optional clustering
+  // Get unique groups
+  const groups = [...new Set(data.nodes.filter(node => node.group).map(node => node.group))]
+
+  // Prepare ELK-compatible data structure, with hierarchical grouping
   const elkGraph = {
     id: 'root',
     layoutOptions: {
       'elk.algorithm': 'layered',
-      'elk.direction': 'DOWN',
+      'elk.direction': 'RIGHT',
       'elk.spacing.nodeNode': '50',
-      'elk.padding': '[top=50,left=50,bottom=50,right=50]'
+      'elk.padding': '[top=50,left=50,bottom=50,right=50]',
+      'elk.hierarchyHandling': 'INCLUDE_CHILDREN'
     },
-    children: data.nodes.map(node => ({
-      id: node.id,
-      width: 140,
-      height: 80,
-      type: node.type,
-      label: node.nice_name,
-      group: node.group
-    })),
+    children: [
+      // Add group nodes first
+      ...groups.map(group => ({
+        id: `group-${group}`,
+        layoutOptions: {
+          'elk.padding': '[top=20,left=20,bottom=20,right=20]'
+        },
+        children: data.nodes
+          .filter(node => node.group === group)
+          .map(node => ({
+            id: node.id,
+            width: 140,
+            height: 80,
+            type: node.type,
+            label: node.nice_name
+          }))
+      })),
+      // Add ungrouped nodes
+      ...data.nodes
+        .filter(node => !node.group)
+        .map(node => ({
+          id: node.id,
+          width: 140,
+          height: 80,
+          type: node.type,
+          label: node.nice_name
+        }))
+    ],
     edges: data.edges.map(edge => ({
       id: `${edge.source}-${edge.target}`,
       sources: [edge.source],
@@ -64,26 +88,53 @@ onMounted(async () => {
   // Compute layout with ELK for node positions
   const elkLayout = await elk.layout(elkGraph)
 
-  // Create node position map from ELK layout
+  // Create node position map from ELK layout, including group positions
   const nodePositions = new Map<string, { x: number; y: number }>()
-  elkLayout.children?.forEach(node => {
-    nodePositions.set(node.id, {
-      x: node.x || 0,
-      y: node.y || 0
-    })
+  
+  // Add group positions
+  elkLayout.children?.forEach(child => {
+    if ('children' in child) {
+      // This is a group
+      nodePositions.set(child.id, {
+        x: child.x || 0,
+        y: child.y || 0
+      })
+      // Add positions for nodes in this group
+      child.children?.forEach(node => {
+        nodePositions.set(node.id, {
+          x: (child.x || 0) + (node.x || 0),
+          y: (child.y || 0) + (node.y || 0)
+        })
+      })
+    } else {
+      // This is an ungrouped node
+      nodePositions.set(child.id, {
+        x: child.x || 0,
+        y: child.y || 0
+      })
+    }
   })
 
   // Initialize Cytoscape
   const cy = cytoscape({
     container: container.value,
     elements: [
+      // Group compound nodes
+      ...groups.map(group => ({
+        data: { 
+          id: `group-${group}`,
+          label: group
+        },
+        classes: ['group-node']
+      })),
       // Nodes
       ...data.nodes.map(node => ({
         data: {
           id: node.id,
           label: node.group ? `${node.nice_name}\n(${node.group})` : node.nice_name,
           type: node.type,
-          group: node.group
+          group: node.group,
+          parent: node.group ? `group-${node.group}` : undefined
         },
         position: {
           x: nodePositions.get(node.id)?.x || 0,
@@ -100,6 +151,22 @@ onMounted(async () => {
       }))
     ],
     style: [
+      {
+        selector: '.group-node',
+        style: {
+          'shape': 'rectangle',
+          'background-color': '#f0f0f0',
+          'border-color': '#ddd',
+          'border-width': 2,
+          'padding': 20,
+          'text-valign': 'top',
+          'text-halign': 'center',
+          'label': 'data(label)',
+          'font-size': '16px',
+          'font-weight': 'bold',
+          'compound-sizing-wrt-labels': 'include'
+        }
+      },
       {
         selector: 'node[type="process"]',
         style: {
