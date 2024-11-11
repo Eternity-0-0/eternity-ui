@@ -47,8 +47,8 @@ onMounted(async () => {
     layoutOptions: {
       'elk.algorithm': 'layered',
       'elk.direction': 'RIGHT',
-      'elk.spacing.nodeNode': '50',
-      'elk.padding': '[top=50,left=50,bottom=50,right=50]',
+      'elk.spacing.nodeNode': '40', // Reduced from 50
+      'elk.padding': '[top=25,left=25,bottom=25,right=25]', // Reduced from 50
       'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
       'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
       'elk.edgeRouting': 'POLYLINE',
@@ -61,14 +61,14 @@ onMounted(async () => {
       ...groups.map(group => ({
         id: `group-${group}`,
         layoutOptions: {
-          'elk.padding': '[top=20,left=20,bottom=20,right=20]'
+          'elk.padding': '[top=15,left=15,bottom=15,right=15]' // Reduced from 20
         },
         children: data.nodes
           .filter(node => node.group === group)
           .map(node => ({
             id: node.id,
             width: 140,
-            height: 80,
+            height: 60,
             type: node.type,
             label: node.nice_name
           }))
@@ -79,7 +79,7 @@ onMounted(async () => {
         .map(node => ({
           id: node.id,
           width: 140,
-          height: 80,
+          height: 60,
           type: node.type,
           label: node.nice_name
         }))
@@ -164,7 +164,7 @@ onMounted(async () => {
           'background-color': '#f0f0f0',
           'border-color': '#ddd',
           'border-width': 2,
-          'padding': 20,
+          'padding': 10,
           'text-valign': 'top',
           'text-halign': 'center',
           'label': 'data(label)',
