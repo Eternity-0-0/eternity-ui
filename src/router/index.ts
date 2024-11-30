@@ -1,19 +1,13 @@
 import { createRouter, createWebHistory } from "vue-router"
-import CellView from "@views/CellView/CellView.vue"
 import GraphView from "@views/CellView/GraphView.vue"
-import AppLayout from "@components/AppLayout/AppLayout.vue"
+import HexBackground from "@/components/HexBackground.vue"
 
 const routes = [
     {
-        path: '/', component: AppLayout, children: [
-            {
-                path: '',
-                component: CellView
-            }
-        ]
+        path: '/main', component: HexBackground
     },
     {
-        path: '/graph', component: AppLayout, children: [
+        path: '/graph', children: [
             {
                 path: ':graphName',
                 component: GraphView,

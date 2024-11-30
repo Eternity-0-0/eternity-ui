@@ -1,0 +1,23 @@
+:root {
+  /* Light mode colors */
+  --background-hexagon-color-light: #FFFFFF;
+  --background-color-light: #00FFFF;
+  --node-stroke-color-light: #0000FF;
+  --node-background-color-light: #FFFFFF;
+  --wiki-stroke-color-light: #8000FF;
+  --wiki-background-color-light: #FFFFFF;
+  --text-color-light: #000000;
+  --secondary-text-color-light: #848484;
+  --process-card-stroke-color-light: #00FFFF;
+
+  /* Dark mode colors */
+  --background-hexagon-color-dark: #012737;
+  --background-color-dark: #00324B;
+  --node-stroke-color-dark: #FFFFFF;
+  --node-background-color-dark: #00324B;
+  --wiki-stroke-color-dark: #34495E;
+  --wiki-background-color-dark: #002A3F;
+  --text-color-dark: #FFFFFF;
+  --secondary-text-color-dark: #D0D0D0;
+  --process-card-stroke-color-dark: #34495E;
+}
