@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router"
 import CellView from "@views/CellView/CellView.vue"
+import GraphView from "@views/CellView/GraphView.vue"
 import AppLayout from "@components/AppLayout/AppLayout.vue"
 
 const routes = [
@@ -8,6 +9,15 @@ const routes = [
             {
                 path: '',
                 component: CellView
+            }
+        ]
+    },
+    {
+        path: '/graph', component: AppLayout, children: [
+            {
+                path: ':graphName',
+                component: GraphView,
+                props: true
             }
         ]
     },
