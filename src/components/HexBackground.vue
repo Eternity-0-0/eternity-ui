@@ -1,6 +1,7 @@
 <template>
   <div class="hexagon-container">
-    <img src="@/assets/hexagons.svg" class="hexagon-pattern" alt="Hexagon pattern background">
+    <!-- Your page content goes here -->
+    <slot></slot>
   </div>
 </template>
 
@@ -13,12 +14,12 @@ export default {
 <style scoped>
 .hexagon-container {
   width: 100%;
-  background-color: var(--background-hexagon-color-dark); /* White background */
-  overflow: hidden;
-}
-.hexagon-pattern {
-  width: 100%;
-  object-fit: cover;
-  opacity: 0.8; /* Slightly transparent to show the background */
+  height: 100vh; /* Adjust as needed */
+  background-color: var(--background-color-dark);
+  background-image: var(--background_hexagon-path-dark);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 110%; /* Displays the central 80% of the image */
+  position: relative;
 }
 </style>

@@ -1,6 +1,7 @@
 :root {
   /* Light mode colors */
   --background-hexagon-color-light: #FFFFFF;
+  --background_hexagon-path-light: url('@/assets/hexagons_light.svg');
   --background-color-light: #00FFFF;
   --node-stroke-color-light: #0000FF;
   --node-background-color-light: #FFFFFF;
@@ -12,6 +13,7 @@
 
   /* Dark mode colors */
   --background-hexagon-color-dark: #012737;
+  --background_hexagon-path-dark: url('@/assets/hexagons.svg');
   --background-color-dark: #00324B;
   --node-stroke-color-dark: #FFFFFF;
   --node-background-color-dark: #00324B;
