@@ -1,39 +1,46 @@
 <template>
   <div class="wiki-body">
     <div class="content-container">
+      <div class="text-content">
+        <p v-for="(paragraph, index) in paragraphs" :key="index">
+          {{ paragraph }}
+        </p>
+      </div>
       <div class="metadata-container">
-        <img src="" alt="Wiki Entry Image" class="metadata-image">
+        <img :src="wikiBody.image" alt="Wiki Entry Image" class="metadata-image">
         <div class="metadata-table">
-          <div class="metadata-row">
-            <span class="metadata-label">Label 1</span>
-            <span class="metadata-value">Value 1</span>
-          </div>
-          <div class="metadata-row">
-            <span class="metadata-label">Label 2</span>
-            <span class="metadata-value">Value 2</span>
-          </div>
-          <div class="metadata-row">
-            <span class="metadata-label">Label 3</span>
-            <span class="metadata-value">Value 3</span>
+          <div v-for="(value, key) in wikiBody.metainfo" :key="key" class="metadata-row">
+            <span class="metadata-label">{{ key }}</span>
+            <span class="metadata-value">{{ value }}</span>
           </div>
         </div>
-      </div>
-      <div class="text-content">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { WikiBody } from '@/models/WikiBody'
+
 export default {
-  name: 'WikiBody'
+  name: 'WikiBody',
+  props: {
+    wikiBody: {
+      type: WikiBody,
+      required: true
+    }
+  },
+  computed: {
+    paragraphs() {
+      return this.wikiBody.text.split('\n').filter(p => p.trim());
+    }
+  }
 }
 </script>
 
 <style scoped>
 .wiki-body {
-  padding: 20px;
+  padding: 28px 20px 20px 32px;
 }
 
 .content-container {
@@ -44,35 +51,33 @@ export default {
 .metadata-container {
   flex-shrink: 0;
   width: 300px;
-  border: 1px solid var(--wiki-stroke-color-dark);
-  border-radius: 4px;
-  padding: 10px;
+  padding: 0 10px 0 10px;
 }
 
 .metadata-image {
   width: 100%;
-  height: 200px;
-  object-fit: cover;
+  height: auto;
+  object-fit: contain;
+  padding-top: 10px;
   border-radius: 4px;
   margin-bottom: 10px;
+  filter: brightness(0) invert(1);
 }
 
 .metadata-table {
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
 .metadata-row {
   display: flex;
   justify-content: space-between;
   padding: 4px 0;
-  border-bottom: 1px solid var(--wiki-stroke-color-dark);
+  font-size: 18px;
 }
 
 .metadata-label {
-  font-weight: bold;
-  color: var(--text-color-dark);
+  color: var(--secondary-text-color-dark);
 }
 
 .metadata-value {
@@ -80,7 +85,13 @@ export default {
 }
 
 .text-content {
+  color: var(--text-color-dark);
+  font-size: 18px;
   flex-grow: 1;
   line-height: 1.6;
+}
+
+.text-content p {
+  margin-bottom: 1em;
 }
 </style>

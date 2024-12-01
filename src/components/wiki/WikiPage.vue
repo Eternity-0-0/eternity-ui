@@ -4,7 +4,7 @@
       <WikiHeader :navigation="mockWikiHeader.navigation" :title="mockWikiHeader.title" />
     </div>
     <div class="container">
-      <WikiBody />
+      <WikiBody :wiki-body="mockWikiBody" />
     </div>
     <div class="container">
       <WikiRelatedProcesses />
@@ -17,6 +17,7 @@ import WikiHeader from './WikiHeader.vue'
 import WikiBody from './WikiBody.vue'
 import WikiRelatedProcesses from './WikiRelatedProcesses.vue'
 import { mockWikiHeader } from '@/mocks/WikiHeader'
+import { mockWikiBody } from '@/mocks/WikiBody'
 
 export default {
   name: 'WikiPage',
@@ -27,7 +28,8 @@ export default {
   },
   data() {
     return {
-      mockWikiHeader
+      mockWikiHeader,
+      mockWikiBody
     }
   }
 }
