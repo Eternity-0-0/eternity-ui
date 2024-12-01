@@ -73,6 +73,7 @@
   }
   
   .metadata-table {
+    margin-top: 40px;
     display: flex;
     flex-direction: column;
   }

@@ -2,11 +2,11 @@
 import { onMounted, ref } from 'vue'
 import cytoscape from 'cytoscape'
 import ELK from 'elkjs/lib/elk.bundled.js'
-import type { GraphData } from '@/models/GraphData'
 
-// Add props definition
+
+// Props definition
 const props = defineProps<{
-  graphName: string
+  graphData: GraphData
 }>()
 
 const container = ref<HTMLElement | null>(null)
@@ -14,13 +14,11 @@ const container = ref<HTMLElement | null>(null)
 onMounted(async () => {
   if (!container.value) return
 
-  const response = await fetch(`http://localhost:8000/graphs/${props.graphName}`)
-  const data: GraphData = await response.json()
-
   const elk = new ELK()
 
+  console.log(props.graphData)
   // Get unique groups
-  const groups = [...new Set(data.nodes.filter(node => node.group).map(node => node.group))]
+  const groups = [...new Set(props.graphData.nodes.filter(node => node.group).map(node => node.group))]
 
   // Prepare ELK-compatible data structure, with hierarchical grouping
   const elkGraph = {
@@ -28,13 +26,12 @@ onMounted(async () => {
     layoutOptions: {
       'elk.algorithm': 'layered',
       'elk.direction': 'RIGHT',
-      'elk.spacing.nodeNode': '40', // Reduced from 50
-      'elk.padding': '[top=25,left=25,bottom=25,right=25]', // Reduced from 50
+      'elk.spacing.nodeNode': '40',
+      'elk.padding': '[top=25,left=25,bottom=25,right=25]',
       'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
       'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
       'elk.edgeRouting': 'POLYLINE',
       'elk.layered.layering.strategy': 'NETWORK_SIMPLEX',
-      // 'elk.layered.layering.strategy': 'LONGEST_PATH',
       'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
     },
     children: [
@@ -42,9 +39,9 @@ onMounted(async () => {
       ...groups.map(group => ({
         id: `group-${group}`,
         layoutOptions: {
-          'elk.padding': '[top=15,left=15,bottom=15,right=15]' // Reduced from 20
+          'elk.padding': '[top=15,left=15,bottom=15,right=15]'
         },
-        children: data.nodes
+        children: props.graphData.nodes
           .filter(node => node.group === group)
           .map(node => ({
             id: node.id,
@@ -55,7 +52,7 @@ onMounted(async () => {
           }))
       })),
       // Add ungrouped nodes
-      ...data.nodes
+      ...props.graphData.nodes
         .filter(node => !node.group)
         .map(node => ({
           id: node.id,
@@ -65,7 +62,7 @@ onMounted(async () => {
           label: node.nice_name
         }))
     ],
-    edges: data.edges.map(edge => ({
+    edges: props.graphData.edges.map(edge => ({
       id: `${edge.source}-${edge.target}`,
       sources: [edge.source],
       targets: [edge.target]
@@ -115,7 +112,7 @@ onMounted(async () => {
         classes: ['group-node']
       })),
       // Nodes
-      ...data.nodes.map(node => ({
+      ...props.graphData.nodes.map(node => ({
         data: {
           id: node.id,
           label: node.status ? `${node.nice_name}: ${node.status}` : node.nice_name,
@@ -129,7 +126,7 @@ onMounted(async () => {
         }
       })),
       // Edges
-      ...data.edges.map(edge => ({
+      ...props.graphData.edges.map(edge => ({
         data: {
           id: `${edge.source}-${edge.target}`,
           source: edge.source,
@@ -221,18 +218,25 @@ onMounted(async () => {
     userPanningEnabled: true,
     layout: { name: 'preset' }
   })
+
+  // Fit the graph to the container
+  cy.fit()
+  cy.center()
 })
 </script>
 
 <template>
-  <div ref="container" class="graph-container"></div>
+  <div ref="container" class="graph"></div>
 </template>
 
 <style scoped>
-.graph-container {
+.graph {
   width: 100%;
   height: 100%;
-  min-height: 800px;
-  background-color: #f5f8fb;
+  position: relative;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 </style>
