@@ -3,10 +3,14 @@ import { onMounted, ref } from 'vue'
 import cytoscape from 'cytoscape'
 import ELK from 'elkjs/lib/elk.bundled.js'
 
-
 // Props definition
 const props = defineProps<{
   graphData: GraphData
+}>()
+
+// Emit definition for node clicks
+const emit = defineEmits<{
+  (e: 'nodeClick', nodeName: string): void
 }>()
 
 const container = ref<HTMLElement | null>(null)
@@ -208,6 +212,14 @@ onMounted(async () => {
     userZoomingEnabled: true,
     userPanningEnabled: true,
     layout: { name: 'preset' }
+  })
+
+  // Add click handler for nodes
+  cy.on('tap', 'node', event => {
+    const node = event.target
+    if (!node.hasClass('group-node')) {
+      emit('nodeClick', node.data('label'))
+    }
   })
 
   // Fit the graph to the container

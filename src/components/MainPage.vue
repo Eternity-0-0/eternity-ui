@@ -5,7 +5,7 @@
         <WikiPage />
       </div>
       <div class="graph-container">
-        <Graph v-if="graphData" :graph-data="graphData" />
+        <Graph v-if="graphData" :graph-data="graphData" @node-click="handleNodeClick" />
       </div>
     </div>
   </HexBackground>
@@ -20,6 +20,10 @@ import type { GraphData } from '@/models/GraphData'
 
 
 const graphData = ref<GraphData | null>(null)
+
+const handleNodeClick = (nodeName: string) => {
+  console.log(nodeName)
+}
 
 onMounted(async () => {
   const response = await fetch(`http://localhost:8000/graphs/epinephrine`)
