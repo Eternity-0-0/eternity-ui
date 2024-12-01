@@ -19,7 +19,7 @@ export default {
   background-image: var(--background_hexagon-path-dark);
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 110%; /* Displays the central 80% of the image */
+  background-size: 180%; /* Displays the central 80% of the image */
   position: relative;
 }
 </style>

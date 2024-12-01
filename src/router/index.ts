@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from "vue-router"
 import GraphView from "@views/CellView/GraphView.vue"
-import HexBackground from "@/components/HexBackground.vue"
+import MainPage from "@components/MainPage.vue"
 
 const routes = [
     {
-        path: '/main', component: HexBackground
+        path: '/main', component: MainPage
     },
     {
         path: '/graph', children: [
