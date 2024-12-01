@@ -6,9 +6,6 @@
     <div class="container">
       <WikiBody :wiki-body="mockWikiBody" />
     </div>
-    <div class="container">
-      <WikiRelatedProcesses />
-    </div>
   </div>
 </template>
 
