@@ -106,6 +106,7 @@ onMounted(async () => {
   // Get computed styles for CSS variables
   const computedStyle = getComputedStyle(document.documentElement)
   const nodeBackgroundColor = computedStyle.getPropertyValue('--node-background-color-dark')
+  const groupBackgroundColor = computedStyle.getPropertyValue('--wiki-background-color-dark')
   const nodeStrokeColor = computedStyle.getPropertyValue('--node-stroke-color-dark')
   const textColor = computedStyle.getPropertyValue('--text-color-dark')
   const edgeColor = computedStyle.getPropertyValue('--edge-color-dark')
@@ -185,7 +186,7 @@ onMounted(async () => {
         selector: '.group-node',
         style: {
           'shape': 'rectangle',
-          'background-color': nodeBackgroundColor,
+          'background-color': groupBackgroundColor,
           'border-color': nodeStrokeColor,
           'border-width': 2,
           'padding': 10,
