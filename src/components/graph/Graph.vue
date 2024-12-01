@@ -99,6 +99,13 @@ onMounted(async () => {
     }
   })
 
+  // Get computed styles for CSS variables
+  const computedStyle = getComputedStyle(document.documentElement)
+  const nodeBackgroundColor = computedStyle.getPropertyValue('--node-background-color-dark')
+  const nodeStrokeColor = computedStyle.getPropertyValue('--node-stroke-color-dark')
+  const textColor = computedStyle.getPropertyValue('--text-color-dark')
+  const edgeColor = computedStyle.getPropertyValue('--edge-color-dark')
+
   // Initialize Cytoscape
   const cy = cytoscape({
     container: container.value,
@@ -136,11 +143,46 @@ onMounted(async () => {
     ],
     style: [
       {
+        selector: 'node',
+        style: {
+          'background-color': nodeBackgroundColor,
+          'border-color': nodeStrokeColor,
+          'border-width': 1.5,
+          'width': 140,
+          'height': 60,
+          'label': 'data(label)',
+          'text-wrap': 'wrap',
+          'text-max-width': 130,
+          'text-valign': 'center',
+          'text-halign': 'center',
+          'font-size': '16px',
+          'color': textColor
+        }
+      },
+      {
+        selector: 'node[type="process"]',
+        style: {
+          'shape': 'rectangle',
+        }
+      },
+      {
+        selector: 'node[type="entity"]',
+        style: {
+          'shape': 'ellipse',
+        }
+      },
+      {
+        selector: 'node[type="effect"]',
+        style: {
+          'shape': 'cut-rectangle',
+        }
+      },
+      {
         selector: '.group-node',
         style: {
           'shape': 'rectangle',
-          'background-color': '#f0f0f0',
-          'border-color': '#ddd',
+          'background-color': nodeBackgroundColor,
+          'border-color': nodeStrokeColor,
           'border-width': 2,
           'padding': 10,
           'text-valign': 'top',
@@ -152,64 +194,13 @@ onMounted(async () => {
         }
       },
       {
-        selector: 'node[type="process"]',
-        style: {
-          'shape': 'rectangle',
-          'background-color': '#ffffff',
-          'border-color': '#666',
-          'border-width': 1.5,
-          'width': 140,
-          'height': 60,
-          'label': 'data(label)',
-          'text-wrap': 'wrap',
-          'text-max-width': 130,
-          'text-valign': 'center',
-          'text-halign': 'center',
-          'font-size': '16px'
-        }
-      },
-      {
-        selector: 'node[type="entity"]',
-        style: {
-          'shape': 'ellipse',
-          'background-color': '#ffffff',
-          'border-color': '#666',
-          'border-width': 1.5,
-          'width': 140,
-          'height': 60,
-          'label': 'data(label)',
-          'text-wrap': 'wrap',
-          'text-max-width': 130,
-          'text-valign': 'center',
-          'text-halign': 'center',
-          'font-size': '16px'
-        }
-      },
-      {
-        selector: 'node[type="effect"]',
-        style: {
-          'shape': 'cut-rectangle',
-          'background-color': '#ffffff',
-          'border-color': '#666',
-          'border-width': 1.5,
-          'width': 140,
-          'height': 60,
-          'label': 'data(label)',
-          'text-wrap': 'wrap',
-          'text-max-width': 130,
-          'text-valign': 'center',
-          'text-halign': 'center',
-          'font-size': '16px'
-        }
-      },
-      {
         selector: 'edge',
         style: {
           'width': 1.0,
-          'line-color': '#aaa',
+          'line-color': edgeColor,
           'curve-style': 'bezier',
           'target-arrow-shape': 'triangle',
-          'target-arrow-color': '#aaa',
+          'target-arrow-color': edgeColor,
           'arrow-scale': 1.5
         }
       }
