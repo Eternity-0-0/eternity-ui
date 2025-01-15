@@ -106,8 +106,9 @@ onMounted(async () => {
   // Get computed styles for CSS variables
   const computedStyle = getComputedStyle(document.documentElement)
   const nodeBackgroundColor = computedStyle.getPropertyValue('--node-background-color-dark')
-  const groupBackgroundColor = computedStyle.getPropertyValue('--wiki-background-color-dark')
   const nodeStrokeColor = computedStyle.getPropertyValue('--node-stroke-color-dark')
+  const groupBackgroundColor = computedStyle.getPropertyValue('--wiki-background-color-dark')
+  const groupStrokeColor = computedStyle.getPropertyValue('--wiki-stroke-color-dark')
   const textColor = computedStyle.getPropertyValue('--text-color-dark')
   const edgeColor = computedStyle.getPropertyValue('--edge-color-dark')
 
@@ -153,14 +154,14 @@ onMounted(async () => {
           'background-color': nodeBackgroundColor,
           'border-color': nodeStrokeColor,
           'border-width': 1.5,
-          'width': 140,
-          'height': 60,
+          'width': 180,
+          'height': 70,
           'label': 'data(label)',
           'text-wrap': 'wrap',
-          'text-max-width': 130,
+          'text-max-width': 150,
           'text-valign': 'center',
           'text-halign': 'center',
-          'font-size': '16px',
+          'font-size': '20px',
           'color': textColor
         }
       },
@@ -174,6 +175,9 @@ onMounted(async () => {
         selector: 'node[type="entity"]',
         style: {
           'shape': 'ellipse',
+          'width': 170,
+          'text-max-width': 140,
+          'height': 75,
         }
       },
       {
