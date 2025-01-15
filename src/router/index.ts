@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from "vue-router"
-import GraphView from "@views/CellView/GraphView.vue"
-import MainPage from "@components/MainPage.vue"
+import GraphView from "@/views/GraphView.vue"
+import MainView from "@/views/MainView.vue"
 
 const routes = [
     {
-        path: '/main', component: MainPage
+        path: '/main', component: MainView
     },
     {
         path: '/graph', children: [

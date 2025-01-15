@@ -12,9 +12,9 @@
 </template>
 
 <script setup lang="ts">
-import HexBackground from './HexBackground.vue'
-import WikiPage from './wiki/WikiPage.vue'
-import Graph from './graph/Graph.vue'
+import HexBackground from '@/components/HexBackground.vue'
+import WikiPage from '@/components/wiki/WikiPage.vue'
+import Graph from '@/components/graph/Graph.vue'
 import { ref, onMounted } from 'vue'
 import type { GraphData } from '@/models/GraphData'
 
