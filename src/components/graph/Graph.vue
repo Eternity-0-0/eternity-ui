@@ -49,8 +49,8 @@ onMounted(async () => {
           .filter(node => node.group === group)
           .map(node => ({
             id: node.id,
-            width: 140,
-            height: 60,
+            width: 170,
+            height: 70,
             type: node.type,
             label: node.nice_name
           }))
@@ -60,8 +60,8 @@ onMounted(async () => {
         .filter(node => !node.group)
         .map(node => ({
           id: node.id,
-          width: 140,
-          height: 60,
+          width: 170,
+          height: 70,
           type: node.type,
           label: node.nice_name
         }))
