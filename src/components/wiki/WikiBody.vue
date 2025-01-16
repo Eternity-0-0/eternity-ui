@@ -30,14 +30,15 @@
   export default {
     name: 'WikiBody',
     props: {
-      wikiBody: {
+      wikiBodyData: {
         type: WikiBodyData,
         required: true
       }
     },
     computed: {
       paragraphs() {
-        return this.wikiBody.text.split('\n').filter(p => p.trim());
+        console.log(this.wikiBodyData);
+        return this.wikiBodyData.text.split('\n').filter(p => p.trim());
       }
     }
   }
@@ -103,5 +104,4 @@
   .text-content p {
     margin-bottom: 1em;
   }
-  </style>
-  
+  </style>  
