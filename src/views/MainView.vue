@@ -43,9 +43,4 @@ onMounted(async () => {
   width: 50%;
   height: 100%;
 }
-
-.graph-container {
-  width: 50%;
-  height: 100%;
-}
 </style>
