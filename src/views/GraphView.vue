@@ -2,26 +2,7 @@
 import { onMounted, ref } from 'vue'
 import cytoscape from 'cytoscape'
 import ELK from 'elkjs/lib/elk.bundled.js'
-
-interface Node {
-  id: string
-  nice_name: string
-  type: string
-  group?: string
-  status?: string
-}
-
-interface Edge {
-  source: string
-  target: string
-}
-
-interface GraphData {
-  name: string
-  nice_name: string
-  nodes: Node[]
-  edges: Edge[]
-}
+import type { GraphData } from '@/models/GraphData'
 
 // Add props definition
 const props = defineProps<{

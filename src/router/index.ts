@@ -1,19 +1,13 @@
 import { createRouter, createWebHistory } from "vue-router"
-import CellView from "@views/CellView/CellView.vue"
-import GraphView from "@views/CellView/GraphView.vue"
-import AppLayout from "@components/AppLayout/AppLayout.vue"
+import GraphView from "@/views/GraphView.vue"
+import MainView from "@/views/MainView.vue"
 
 const routes = [
     {
-        path: '/', component: AppLayout, children: [
-            {
-                path: '',
-                component: CellView
-            }
-        ]
+        path: '/main', component: MainView
     },
     {
-        path: '/graph', component: AppLayout, children: [
+        path: '/graph', children: [
             {
                 path: ':graphName',
                 component: GraphView,
@@ -21,6 +15,11 @@ const routes = [
             }
         ]
     },
+    {
+        path: '/wiki/:name',
+        component: MainView,
+        props: (route: { params: { name: string } }) => ({ name: route.params.name })
+    }
 ]
 
 export const router = createRouter({
