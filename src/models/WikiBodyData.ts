@@ -1,4 +1,4 @@
-export class WikiBody {
+export class WikiBodyData {
     text: string;
     image: string;
     metainfo: { [key: string]: string };

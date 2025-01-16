@@ -1,4 +1,4 @@
-export class WikiHeader {
+export class WikiHeaderData {
     navigation: string[];
     title: string;
 

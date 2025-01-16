@@ -8,7 +8,7 @@ export class RelatedProcess {
     }
 }
 
-export class WikiRelatedProcesses {
+export class WikiRelatedProcessesData {
     processes: RelatedProcess[];
 
     constructor(processes: RelatedProcess[] = []) {

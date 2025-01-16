@@ -25,13 +25,13 @@
   </template>
   
   <script>
-  import { WikiBody } from '@/models/WikiBody'
+  import { WikiBodyData } from '@/models/WikiBodyData'
   
   export default {
     name: 'WikiBody',
     props: {
       wikiBody: {
-        type: WikiBody,
+        type: WikiBodyData,
         required: true
       }
     },

@@ -15,6 +15,11 @@ const routes = [
             }
         ]
     },
+    {
+        path: '/wiki/:name',
+        component: MainView,
+        props: (route: { params: { name: string } }) => ({ name: route.params.name })
+    }
 ]
 
 export const router = createRouter({

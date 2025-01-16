@@ -2,10 +2,8 @@
   <HexBackground>
     <div class="main-container">
       <div class="wiki-container">
-        <WikiPage />
-      </div>
-      <div class="graph-container">
-        <Graph v-if="graphData" :graph-data="graphData" @node-click="handleNodeClick" />
+        <WikiPage v-if="componentData" :component-data="componentData" />
+        <div v-else>Loading...</div>
       </div>
     </div>
   </HexBackground>
@@ -14,21 +12,24 @@
 <script setup lang="ts">
 import HexBackground from '@/components/HexBackground.vue'
 import WikiPage from '@/components/wiki/WikiPage.vue'
-import Graph from '@/components/graph/Graph.vue'
 import { ref, onMounted } from 'vue'
-import type { GraphData } from '@/models/GraphData'
+import type { ComponentData } from '@/models/ComponentData'
 
+const props = defineProps<{
+  name: string
+}>()
 
-const graphData = ref<GraphData | null>(null)
+const componentData = ref<ComponentData | null>(null)
 
-const handleNodeClick = (nodeName: string) => {
-  console.log(nodeName)
-}
 
 onMounted(async () => {
-  const response = await fetch(`http://localhost:8000/graphs/epinephrine`)
-  graphData.value = await response.json()
+  const response = await fetch(`http://localhost:8000/entities/${props.name}`)
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`)
+  }
+  componentData.value = await response.json() as ComponentData
 })
+
 </script>
 
 <style scoped>

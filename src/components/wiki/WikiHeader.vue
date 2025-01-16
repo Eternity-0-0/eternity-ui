@@ -1,28 +1,25 @@
 <template>
   <div class="wiki-header">
     <div class="navigation">
-      <template v-for="(item, index) in navigation" :key="index">
+      <template v-for="(item, index) in wikiHeaderData.navigation" :key="index">
         <span class="nav-item">{{ item }}</span>
-        <span v-if="index < navigation.length - 1" class="nav-separator">&gt;</span>
+        <span v-if="index < wikiHeaderData.navigation.length - 1" class="nav-separator">&gt;</span>
       </template>
     </div>
     <div class="title">
-      {{ title }}
+      {{ wikiHeaderData.title }}
     </div>
   </div>
 </template>
 
 <script>
+import { WikiHeaderData } from '@/models/WikiHeaderData'
+
 export default {
   name: 'WikiHeader',
   props: {
-    navigation: {
-      type: Array,
-      required: true,
-      default: () => []
-    },
-    title: {
-      type: String,
+    wikiHeaderData: {
+      type: WikiHeaderData,
       required: true
     }
   }
