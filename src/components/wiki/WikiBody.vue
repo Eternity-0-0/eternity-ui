@@ -3,10 +3,10 @@
       <div class="content-container">
         <!-- Move metadata-container before text-content for proper float behavior -->
         <div class="metadata-container">
-          <img :src="wikiBody.image" alt="Wiki Entry Image" class="metadata-image">
+          <img :src="'data:image/png;base64,' + wikiBodyData.image" alt="Wiki Entry Image" class="metadata-image">
           <div class="metadata-table">
             <div 
-              v-for="(value, key) in wikiBody.metainfo" 
+              v-for="(value, key) in wikiBodyData.metainfo" 
               :key="key" 
               class="metadata-row"
             >
