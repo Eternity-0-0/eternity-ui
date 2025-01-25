@@ -9,44 +9,44 @@
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
 import WikiHeader from './WikiHeader.vue'
 import WikiBody from './WikiBody.vue'
 import WikiRelatedProcesses from './WikiRelatedProcesses.vue'
 import { WikiBodyData } from '@/models/WikiBodyData'
 import { WikiHeaderData } from '@/models/WikiHeaderData'
+import type { ComponentData } from '@/models/ComponentData'
+import { computed } from 'vue'
+import { Size } from '@/models/ComponentData'
 
-export default {
-  name: 'WikiPage',
-  components: {
-    WikiHeader,
-    WikiBody,
-    WikiRelatedProcesses
-  },
-  props: {
-    componentData: {
-      type: Object,
-      required: true
+const props = defineProps<{
+  componentData: ComponentData
+}>()
+
+const wikiHeader = computed(() => {
+  return new WikiHeaderData(
+    [],
+    props.componentData.nice_name
+  )
+})
+
+const wikiBody = computed(() => {
+  // Create a proper Size instance
+  const size = new Size(
+    props.componentData.size.min,
+    props.componentData.size.max,
+    props.componentData.size.value,
+    props.componentData.size.unit
+  )
+
+  return new WikiBodyData(
+    `${props.componentData.description}\n\n${props.componentData.function}`,
+    props.componentData.image,
+    {
+      'Size': size.to_string()
     }
-  },
-  computed: {
-    wikiHeader() {
-      return new WikiHeaderData(
-        [],
-        this.componentData.nice_name
-      )
-    },
-    wikiBody() {
-      return new WikiBodyData(
-        `${this.componentData.description}\n\n${this.componentData.function}`,
-        this.componentData.image,
-        {
-          'Size': `${this.componentData.size.min}-${this.componentData.size.max} ${this.componentData.size.unit}`
-        }
-      )
-    }
-  }
-}
+  )
+})
 </script>
 
 <style scoped>
