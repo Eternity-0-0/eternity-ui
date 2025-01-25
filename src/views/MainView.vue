@@ -1,11 +1,11 @@
 <template>
   <HexBackground>
     <div class="main-container">
-      <Search 
-        :options="searchOptions" 
-        class="search-bar"
-      />
       <div class="wiki-container">
+        <Search 
+          :options="searchOptions" 
+          class="search-bar"
+        />
         <WikiPage v-if="componentData" :component-data="componentData" />
         <div v-else>Loading...</div>
       </div>
@@ -28,7 +28,7 @@ const componentData = ref<ComponentData | null>(null)
 
 const searchOptions = [
   "glutamate",
-  "glutamic acid",
+  "glutamic acid", 
   "indogeneous",
   "testosterone",
   "ferritine",
@@ -56,12 +56,12 @@ onMounted(async () => {
 .wiki-container {
   width: 50%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
 }
 
 .search-bar {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  z-index: 100;
+  margin-bottom: 0px;
 }
 </style>

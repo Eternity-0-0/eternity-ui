@@ -65,31 +65,49 @@
   <style scoped>
   .search-container {
     position: relative;
-    width: 300px;
+    width: 100%;
+    margin: 20px;
+    padding: 0 20px 0 32px;
+    background-color: var(--wiki-background-color-dark);
+    border: 3px solid var(--wiki-stroke-color-dark);
+    border-radius: 30px;
+    height: 60px;
+    display: flex;
+    align-items: center;
   }
+  
   .search-input {
     width: 100%;
     padding: 8px;
-    font-size: 16px;
+    font-size: 18px;
+    background-color: transparent;
+    border: none;
+    color: var(--text-color-dark);
+    outline: none; /* Remove the focus outline */
   }
+  
   .suggestion-list {
     position: absolute;
-    top: 100%;
+    top: calc(100% - 20px);
     left: 0;
     width: 100%;
     margin: 0;
     padding: 0;
     list-style: none;
-    border: 1px solid #ccc;
-    background: white;
+    background-color: var(--wiki-background-color-dark);
+    border: 3px solid var(--wiki-stroke-color-dark);
+    border-radius: 20px;
     z-index: 10;
   }
+  
   .suggestion-item {
-    padding: 8px;
+    padding: 8px 16px;
     cursor: pointer;
+    color: var(--text-color-dark);
+    font-size: 18px;
   }
+  
   .suggestion-item:hover {
-    background: #f0f0f0;
+    background-color: var(--wiki-stroke-color-dark);
   }
   </style>
-  
