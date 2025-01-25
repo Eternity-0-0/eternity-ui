@@ -46,7 +46,6 @@
       // Initialize Fuse.js with the options
       this.fuse = new Fuse(this.options, {
         threshold: 0.3, // Adjust threshold for matching accuracy
-        distance: -3, // Negative distance for tighter matches
       });
     },
     methods: {
@@ -89,6 +88,8 @@
     border: none;
     color: var(--text-color-dark);
     outline: none; /* Remove the focus outline */
+    font-family: 'Lexend Deca', sans-serif;
+    font-weight: 100;
   }
   
   .suggestion-list {
@@ -107,7 +108,6 @@
   
   .suggestion-item {
     height: 40px;
-    margin: 0;
     padding: 0 10px;
     cursor: pointer;
     color: var(--text-color-dark);
@@ -116,7 +116,7 @@
     display: flex;
     align-items: center;
     border-radius: 10px;
-    margin: 5px 10px;
+    margin: 0px 10px;
   }
   
   .suggestion-item span {
@@ -125,6 +125,10 @@
   
   .suggestion-item-hover {
     background-color: var(--wiki-stroke-color-dark);
+  }
+
+  .suggestion-item:first-child {
+    margin-top: 5px;
   }
 
   .suggestion-item:last-child {
