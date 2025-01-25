@@ -1,6 +1,10 @@
 <template>
   <HexBackground>
     <div class="main-container">
+      <Search 
+        :options="searchOptions" 
+        class="search-bar"
+      />
       <div class="wiki-container">
         <WikiPage v-if="componentData" :component-data="componentData" />
         <div v-else>Loading...</div>
@@ -14,6 +18,7 @@ import HexBackground from '@/components/HexBackground.vue'
 import WikiPage from '@/components/wiki/WikiPage.vue'
 import { ref, onMounted } from 'vue'
 import type { ComponentData } from '@/models/ComponentData'
+import Search from '@/components/search/Search.vue'
 
 const props = defineProps<{
   name: string
@@ -21,6 +26,15 @@ const props = defineProps<{
 
 const componentData = ref<ComponentData | null>(null)
 
+const searchOptions = [
+  "glutamate",
+  "glutamic acid",
+  "indogeneous",
+  "testosterone",
+  "ferritine",
+  "iron",
+  "mTOR pathway"
+]
 
 onMounted(async () => {
   const response = await fetch(`http://localhost:8000/entities/${props.name}`)
@@ -42,5 +56,12 @@ onMounted(async () => {
 .wiki-container {
   width: 50%;
   height: 100%;
+}
+
+.search-bar {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 100;
 }
 </style>
