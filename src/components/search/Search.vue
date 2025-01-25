@@ -20,7 +20,7 @@
           @mouseover="hoveredIndex = index"
           @mouseleave="hoveredIndex = null"
         >
-          {{ item }}
+          {{ item.name_for_rendering }}
         </li>
       </ul>
     </div>
@@ -49,7 +49,8 @@
     mounted() {
       // Initialize Fuse.js with the options
       this.fuse = new Fuse(this.options, {
-        threshold: 0.3, // Adjust threshold for matching accuracy
+        threshold: 0.3,
+        keys: ['name_for_rendering']
       });
     },
     directives: {
@@ -77,8 +78,8 @@
         }
       },
       selectSuggestion(item) {
-        console.log(`Selected: ${item}`);
-        this.query = item;
+        this.query = item.name_for_rendering;
+        this.$emit('search', item);
         this.suggestions = [];
       },
       handleClickOutside() {
