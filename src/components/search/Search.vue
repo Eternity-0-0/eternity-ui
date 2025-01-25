@@ -1,9 +1,12 @@
 <template>
     <div class="search-container">
+      <img src="@/assets/search_icon.svg" class="search-icon" :class="{ 'search-icon-active': query || isFocused }" alt="Search" />
       <input
         type="text"
         v-model="query"
         @input="onInput"
+        @focus="isFocused = true"
+        @blur="isFocused = false"
         placeholder="Search..."
         class="search-input"
       />
@@ -40,6 +43,7 @@
         suggestions: [],
         fuse: null,
         hoveredIndex: null,
+        isFocused: false,
       };
     },
     mounted() {
@@ -71,7 +75,7 @@
     position: relative;
     width: 100%;
     margin: 20px;
-    padding: 0 20px 0 32px;
+    padding: 0 20px 0 15px;
     background-color: var(--wiki-background-color-dark);
     border: 3px solid var(--wiki-stroke-color-dark);
     border-radius: 30px;
@@ -80,6 +84,18 @@
     align-items: center;
   }
   
+  .search-icon {
+    width: 30px;
+    height: 30px;
+    margin-right: 5px;
+    filter: invert(82%) sepia(0%) saturate(0%) hue-rotate(137deg) brightness(92%) contrast(92%);
+    transition: filter 0.2s ease;
+  }
+
+  .search-icon-active {
+    filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
+  }
+
   .search-input {
     width: 100%;
     padding: 8px;
