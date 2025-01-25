@@ -13,6 +13,9 @@
           :key="index"
           @click="selectSuggestion(item)"
           class="suggestion-item"
+          :class="{ 'suggestion-item-hover': hoveredIndex === index }"
+          @mouseover="hoveredIndex = index"
+          @mouseleave="hoveredIndex = null"
         >
           {{ item }}
         </li>
@@ -36,12 +39,14 @@
         query: "",
         suggestions: [],
         fuse: null,
+        hoveredIndex: null,
       };
     },
     mounted() {
       // Initialize Fuse.js with the options
       this.fuse = new Fuse(this.options, {
         threshold: 0.3, // Adjust threshold for matching accuracy
+        distance: -3, // Negative distance for tighter matches
       });
     },
     methods: {
@@ -88,26 +93,41 @@
   
   .suggestion-list {
     position: absolute;
-    top: calc(100% - 20px);
-    left: 0;
-    width: 100%;
+    top: 100%;
+    left: 20px;
+    width: calc(100% - 40px);
     margin: 0;
     padding: 0;
     list-style: none;
     background-color: var(--wiki-background-color-dark);
     border: 3px solid var(--wiki-stroke-color-dark);
-    border-radius: 20px;
+    border-radius: 0 0 20px 20px;
     z-index: 10;
   }
   
   .suggestion-item {
-    padding: 8px 16px;
+    height: 40px;
+    margin: 0;
+    padding: 0 10px;
     cursor: pointer;
     color: var(--text-color-dark);
+    font-family: 'Lexend Deca', sans-serif;
     font-size: 18px;
+    display: flex;
+    align-items: center;
+    border-radius: 10px;
+    margin: 5px 10px;
   }
   
-  .suggestion-item:hover {
+  .suggestion-item span {
+    padding-left: 10px;
+  }
+  
+  .suggestion-item-hover {
     background-color: var(--wiki-stroke-color-dark);
+  }
+
+  .suggestion-item:last-child {
+    margin-bottom: 10px;
   }
   </style>
