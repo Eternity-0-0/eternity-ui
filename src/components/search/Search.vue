@@ -1,5 +1,5 @@
 <template>
-    <div class="search-container">
+    <div class="search-container" v-click-outside="handleClickOutside">
       <img src="@/assets/search_icon.svg" class="search-icon" :class="{ 'search-icon-active': query || isFocused }" alt="Search" />
       <input
         type="text"
@@ -52,6 +52,21 @@
         threshold: 0.3, // Adjust threshold for matching accuracy
       });
     },
+    directives: {
+      clickOutside: {
+        mounted(el, binding) {
+          el.clickOutsideEvent = function(event) {
+            if (!(el === event.target || el.contains(event.target))) {
+              binding.value(event);
+            }
+          };
+          document.addEventListener('click', el.clickOutsideEvent);
+        },
+        unmounted(el) {
+          document.removeEventListener('click', el.clickOutsideEvent);
+        },
+      },
+    },
     methods: {
       onInput() {
         if (this.query.trim()) {
@@ -64,6 +79,9 @@
       selectSuggestion(item) {
         console.log(`Selected: ${item}`);
         this.query = item;
+        this.suggestions = [];
+      },
+      handleClickOutside() {
         this.suggestions = [];
       },
     },
@@ -144,7 +162,7 @@
   }
 
   .suggestion-item:first-child {
-    margin-top: 5px;
+    margin-top: 7px;
   }
 
   .suggestion-item:last-child {
