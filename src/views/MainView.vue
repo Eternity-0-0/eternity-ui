@@ -6,6 +6,7 @@
           v-if="searchOptions.length"
           :options="searchOptions" 
           class="search-bar"
+          @search="handleSearch"
         />
         <WikiPage v-if="componentData" :component-data="componentData" />
         <div v-else>Loading...</div>
@@ -21,6 +22,11 @@ import { ref, onMounted } from 'vue'
 import type { ComponentData } from '@/models/ComponentData'
 import Search from '@/components/search/Search.vue'
 import { SearchSuggestion } from '@/models/SearchSuggestion'
+import { loadSearchSuggestions } from '@/services/loading'
+import { fetchComponentData } from '@/services/api'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 const props = defineProps<{
   name: string
 }>()
@@ -28,41 +34,16 @@ const props = defineProps<{
 const componentData = ref<ComponentData | null>(null)
 const searchOptions = ref<SearchSuggestion[]>([])
 
+const handleSearch = async (suggestion: SearchSuggestion) => {
+  await router.push(`/wiki/${suggestion.name}`)
+  componentData.value = await fetchComponentData(suggestion.name)
+}
+
 onMounted(async () => {
-  // Load component data
-  const response = await fetch(`http://localhost:8000/entities/${props.name}`)
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`)
-  }
-  componentData.value = await response.json() as ComponentData
+  componentData.value = await fetchComponentData(props.name)
 
-  // Try to get search suggestions from localStorage
-  const storedSuggestions = localStorage.getItem('searchSuggestions')
-  if (storedSuggestions) {
-    searchOptions.value = JSON.parse(storedSuggestions).map((item: any) => 
-      new SearchSuggestion(item.nice_name, item.name, item.short_name)
-    )
-  } else {
-    // Fetch suggestions from API if not in localStorage
-    const suggestionsResponse = await fetch('http://localhost:8000/entities')
-    if (!suggestionsResponse.ok) {
-      throw new Error(`HTTP error! status: ${suggestionsResponse.status}`)
-    }
-    const entities = await suggestionsResponse.json()
-    
-    // Filter for well described entities and create SearchSuggestions
-    const suggestions = entities
-      .filter((entity: any) => entity.is_well_described)
-      .map((entity: any) => new SearchSuggestion(
-        entity.nice_name,
-        entity.name,
-        entity.short_name
-      ))
-
-    // Store in localStorage for future use
-    localStorage.setItem('searchSuggestions', JSON.stringify(entities.filter((e: any) => e.is_well_described)))
-    searchOptions.value = suggestions
-  }
+  // Load search suggestions
+  searchOptions.value = await loadSearchSuggestions()
 })
 
 </script>

@@ -78,7 +78,7 @@
         }
       },
       selectSuggestion(item) {
-        this.query = item.name_for_rendering;
+        this.query = ""; // Clear the search input
         this.$emit('search', item);
         this.suggestions = [];
       },
