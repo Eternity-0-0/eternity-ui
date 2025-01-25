@@ -51,9 +51,10 @@ export default {
 
 <style scoped>
 .wiki-page {
-  margin: 20px;
+  margin: 10px 0 20px 20px;
   display: flex;
   flex-direction: column;
+  width: 100%;
   gap: 10px;
 }
 
