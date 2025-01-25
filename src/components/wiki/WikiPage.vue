@@ -41,7 +41,7 @@ export default {
         `${this.componentData.description}\n\n${this.componentData.function}`,
         this.componentData.image,
         {
-          'Size': `${this.componentData.size.min}-${this.componentData.size.max} ${this.componentData.size.unit}`
+          'Size': this.componentData.size.to_string()
         }
       )
     }
