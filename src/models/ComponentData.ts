@@ -32,6 +32,7 @@ export class ComponentData {
     size_raw: number | null;
     location: string | null;
     image: string;
+    whiten_image: boolean | null;
     related_processes: string[];
     component_type: string;
 
@@ -48,6 +49,7 @@ export class ComponentData {
         size_raw: number | null,
         location: string | null,
         image: string,
+        whiten_image: boolean | null,
         related_processes: string[],
         component_type: string
     ) {
@@ -63,7 +65,9 @@ export class ComponentData {
         this.size_raw = size_raw;
         this.location = location;
         this.image = image;
+        this.whiten_image = whiten_image;
         this.related_processes = related_processes;
         this.component_type = component_type;
     }
 }
+

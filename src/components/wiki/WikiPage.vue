@@ -42,6 +42,7 @@ const wikiBody = computed(() => {
   return new WikiBodyData(
     `${props.componentData.description}\n\n${props.componentData.function}`,
     props.componentData.image,
+    props.componentData.whiten_image ?? true,
     {
       'Size': size.to_string()
     }

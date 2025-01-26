@@ -3,7 +3,7 @@
       <div class="content-container">
         <!-- Move metadata-container before text-content for proper float behavior -->
         <div class="metadata-container">
-          <img :src="'data:image/png;base64,' + wikiBodyData.image" alt="Wiki Entry Image" class="metadata-image">
+          <img :src="'data:image/png;base64,' + wikiBodyData.image" alt="Wiki Entry Image" class="metadata-image" :class="{ 'whiten': wikiBodyData.whiten_image }">
           <div class="metadata-table">
             <div 
               v-for="(value, key) in wikiBodyData.metainfo" 
@@ -70,6 +70,9 @@
     padding-top: 10px;
     border-radius: 4px;
     margin-bottom: 10px;
+  }
+
+  .metadata-image.whiten {
     filter: brightness(0) invert(1);
   }
   
