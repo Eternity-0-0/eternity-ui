@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import cytoscape from 'cytoscape'
+import * as d3 from 'd3'
 import ELK from 'elkjs/lib/elk.bundled.js'
-import type { GraphData } from '@/models/GraphData'
+import type { GraphData, NodeShape } from '@/models/GraphData'
 import { fetchGraphData } from '@/services/api'
+import { computeArrowPoint } from '@/services/arrowHelper'
+import { computeGraphLayout } from '@/services/layout_graph'
+import { resolveGraphShapes } from '@/services/resolve_graph_shapes'
 
 // Add props definition
 const props = defineProps<{
@@ -12,216 +15,219 @@ const props = defineProps<{
 
 const container = ref<HTMLElement | null>(null)
 
+interface MarkerConfig {
+  id: string
+  refX: number
+}
+
+const markerConfigs: Record<NodeShape | 'cofactor', MarkerConfig> = {
+  'ellipse': { id: 'arrow-entity', refX: 8 },
+  'rectangle': { id: 'arrow-process', refX: 8 },
+  'octagon': { id: 'arrow-effect', refX: 8 },
+  'cofactor': { id: 'arrow-cofactor', refX: 8 }
+}
+
 onMounted(async () => {
   if (!container.value) return
 
   const data = await fetchGraphData(props.graphName)
+  const graphWithShapes = resolveGraphShapes(data)
+  const graphWithLayout = await computeGraphLayout(graphWithShapes)
 
-  const elk = new ELK()
+  // Initialize D3
+  const width = container.value.clientWidth
+  const height = container.value.clientHeight
 
-  // Get unique groups
-  const groups = [...new Set(data.nodes.filter(node => node.group).map(node => node.group))]
+  // Clear any existing SVG
+  d3.select(container.value).selectAll('*').remove()
 
-  // Prepare ELK-compatible data structure, with hierarchical grouping
-  const elkGraph = {
-    id: 'root',
-    layoutOptions: {
-      'elk.algorithm': 'layered',
-      'elk.direction': 'RIGHT',
-      'elk.spacing.nodeNode': '40', // Reduced from 50
-      'elk.padding': '[top=25,left=25,bottom=25,right=25]', // Reduced from 50
-      'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
-      'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
-      'elk.edgeRouting': 'POLYLINE',
-      'elk.layered.layering.strategy': 'NETWORK_SIMPLEX',
-      // 'elk.layered.layering.strategy': 'LONGEST_PATH',
-      'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
-    },
-    children: [
-      // Add group nodes first
-      ...groups.map(group => ({
-        id: `group-${group}`,
-        layoutOptions: {
-          'elk.padding': '[top=15,left=15,bottom=15,right=15]' // Reduced from 20
-        },
-        children: data.nodes
-          .filter(node => node.group === group)
-          .map(node => ({
-            id: node.id,
-            width: 140,
-            height: 60,
-            type: node.type,
-            label: node.nice_name
-          }))
-      })),
-      // Add ungrouped nodes
-      ...data.nodes
-        .filter(node => !node.group)
-        .map(node => ({
-          id: node.id,
-          width: 140,
-          height: 60,
-          type: node.type,
-          label: node.nice_name
-        }))
-    ],
-    edges: data.edges.map(edge => ({
-      id: `${edge.source}-${edge.target}`,
-      sources: [edge.source],
-      targets: [edge.target]
-    }))
-  }
+  const svg = d3.select(container.value)
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('viewBox', [0, 0, width, height])
+    .style('background-color', '#f5f8fb')
 
-  // Compute layout with ELK for node positions
-  const elkLayout = await elk.layout(elkGraph)
+  // Create a group for zoom/pan
+  const g = svg.append('g')
 
-  // Create node position map from ELK layout, including group positions
-  const nodePositions = new Map<string, { x: number; y: number }>()
-  
-  // Add group positions
-  elkLayout.children?.forEach(child => {
-    if ('children' in child) {
-      // This is a group
-      nodePositions.set(child.id, {
-        x: child.x || 0,
-        y: child.y || 0
-      })
-      // Add positions for nodes in this group
-      child.children?.forEach(node => {
-        nodePositions.set(node.id, {
-          x: (child.x || 0) + (node.x || 0),
-          y: (child.y || 0) + (node.y || 0)
-        })
-      })
-    } else {
-      // This is an ungrouped node
-      nodePositions.set(child.id, {
-        x: child.x || 0,
-        y: child.y || 0
-      })
+  // Add zoom behavior
+  const zoom = d3.zoom()
+    .scaleExtent([0.1, 4])
+    .on('zoom', (event) => {
+      g.attr('transform', event.transform)
+    })
+
+  svg.call(zoom as any)
+
+  // Add arrow marker definitions
+  const defs = svg.append('defs')
+
+  Object.entries(markerConfigs).forEach(([_, config]) => {
+    defs.append('marker')
+      .attr('id', config.id)
+      .attr('viewBox', '0 -5 10 10')
+      .attr('refX', config.refX)
+      .attr('refY', 0)
+      .attr('markerWidth', 6)
+      .attr('markerHeight', 6)
+      .attr('orient', 'auto')
+      .append('path')
+      .attr('d', 'M0,-5L10,0L0,5')
+      .attr('fill', '#aaa')
+  })
+
+  // Draw edges with appropriate markers
+  const links = g.selectAll('path')
+    .data(graphWithLayout.edges)
+    .enter()
+    .append('path')
+    .attr('fill', 'none')
+    .attr('stroke', '#aaa')
+    .attr('stroke-width', 1.5)
+    .attr('d', d => {
+      const sourceNode = graphWithLayout.nodes.find(n => n.id === d.source)
+      const targetNode = graphWithLayout.nodes.find(n => n.id === d.target)
+      if (!sourceNode?.center || !targetNode?.center) return ''
+
+      try {
+        const intersectionPoint = computeArrowPoint(sourceNode, targetNode)
+        // Add a red dot at the intersection point
+        g.append('circle')
+          .attr('cx', intersectionPoint.x)
+          .attr('cy', intersectionPoint.y)
+          .attr('r', 3)
+          .attr('fill', 'red')
+        return `M ${sourceNode.center.x},${sourceNode.center.y} L ${intersectionPoint.x},${intersectionPoint.y}`
+      } catch (e: any) {
+        return `M ${sourceNode.center.x},${sourceNode.center.y} L ${targetNode.center.x},${targetNode.center.y}`
+      }
+    })
+    .attr('marker-end', d => {
+      const targetNode = graphWithLayout.nodes.find(n => n.id === d.target)
+      if (!targetNode) return 'url(#arrow-entity)'
+      
+      if (targetNode.entity_subtype === 'cofactor') {
+        return `url(#${markerConfigs.cofactor.id})`
+      }
+      
+      return `url(#${markerConfigs[targetNode.shape].id})`
+    })
+
+  // Draw nodes
+  const nodes = g.selectAll('g.node')
+    .data(graphWithLayout.nodes)
+    .enter()
+    .append('g')
+    .attr('class', 'node')
+    .attr('transform', d => `translate(${d.center?.x || 0},${d.center?.y || 0})`)
+
+  // Add center point indicators
+  nodes.append('circle')
+    .attr('r', 3)
+    .attr('fill', 'blue')
+    .attr('class', 'center-point')
+
+  // Add different shapes based on node type (except for cofactors)
+  nodes.each(function(d) {
+    const node = d3.select(this)
+    if (d.entity_subtype !== 'cofactor') {  // Only draw shapes for non-cofactor nodes
+      if (d.type === 'process') {
+        node.append('rect')
+          .attr('width', 140)
+          .attr('height', 60)
+          .attr('x', -70)
+          .attr('y', -30)
+          .attr('fill', '#ffffff')
+          .attr('stroke', '#666')
+          .attr('stroke-width', 1.5)
+          .attr('rx', 5)
+      } else if (d.type === 'entity') {
+        node.append('ellipse')
+          .attr('rx', 70)
+          .attr('ry', 30)
+          .attr('fill', '#ffffff')
+          .attr('stroke', '#666')
+          .attr('stroke-width', 1.5)
+      } else if (d.type === 'effect') {
+        // Octagon for effect nodes
+        const points = octagonPoints(70, 30)
+        node.append('polygon')
+          .attr('points', points)
+          .attr('fill', '#ffffff')
+          .attr('stroke', '#666')
+          .attr('stroke-width', 1.5)
+      }
     }
   })
 
-  // Initialize Cytoscape
-  const cy = cytoscape({
-    container: container.value,
-    elements: [
-      // Group compound nodes
-      ...groups.map(group => ({
-        data: { 
-          id: `group-${group}`,
-          label: group
-        },
-        classes: ['group-node']
-      })),
-      // Nodes
-      ...data.nodes.map(node => ({
-        data: {
-          id: node.id,
-          label: node.status ? `${node.nice_name}: ${node.status}` : node.nice_name,
-          type: node.type,
-          group: node.group,
-          parent: node.group ? `group-${node.group}` : undefined
-        },
-        position: {
-          x: nodePositions.get(node.id)?.x || 0,
-          y: nodePositions.get(node.id)?.y || 0
-        }
-      })),
-      // Edges
-      ...data.edges.map(edge => ({
-        data: {
-          id: `${edge.source}-${edge.target}`,
-          source: edge.source,
-          target: edge.target
-        }
-      }))
-    ],
-    style: [
-      {
-        selector: '.group-node',
-        style: {
-          'shape': 'rectangle',
-          'background-color': '#f0f0f0',
-          'border-color': '#ddd',
-          'border-width': 2,
-          'padding': 10,
-          'text-valign': 'top',
-          'text-halign': 'center',
-          'label': 'data(label)',
-          'font-size': '16px',
-          'font-weight': 'bold',
-          'compound-sizing-wrt-labels': 'include'
-        }
-      },
-      {
-        selector: 'node[type="process"]',
-        style: {
-          'shape': 'rectangle',
-          'background-color': '#ffffff',
-          'border-color': '#666',
-          'border-width': 1.5,
-          'width': 140,
-          'height': 60,
-          'label': 'data(label)',
-          'text-wrap': 'wrap',
-          'text-max-width': 130,
-          'text-valign': 'center',
-          'text-halign': 'center',
-          'font-size': '16px'
-        }
-      },
-      {
-        selector: 'node[type="entity"]',
-        style: {
-          'shape': 'ellipse',
-          'background-color': '#ffffff',
-          'border-color': '#666',
-          'border-width': 1.5,
-          'width': 140,
-          'height': 60,
-          'label': 'data(label)',
-          'text-wrap': 'wrap',
-          'text-max-width': 130,
-          'text-valign': 'center',
-          'text-halign': 'center',
-          'font-size': '16px'
-        }
-      },
-      {
-        selector: 'node[type="effect"]',
-        style: {
-          'shape': 'cut-rectangle',
-          'background-color': '#ffffff',
-          'border-color': '#666',
-          'border-width': 1.5,
-          'width': 140,
-          'height': 60,
-          'label': 'data(label)',
-          'text-wrap': 'wrap',
-          'text-max-width': 130,
-          'text-valign': 'center',
-          'text-halign': 'center',
-          'font-size': '16px'
-        }
-      },
-      {
-        selector: 'edge',
-        style: {
-          'width': 1.0,
-          'line-color': '#aaa',
-          'curve-style': 'bezier',
-          'target-arrow-shape': 'triangle',
-          'target-arrow-color': '#aaa',
-          'arrow-scale': 1.5
-        }
-      }
-    ],
-    userZoomingEnabled: true,
-    userPanningEnabled: true,
-    layout: { name: 'preset' }
-  })
+  // Add node labels (for all nodes including cofactors)
+  nodes.append('text')
+    .attr('text-anchor', 'middle')
+    .attr('dy', '0.35em')
+    .attr('font-size', d => d.entity_subtype === 'cofactor' ? '14px' : '16px')  // Slightly smaller text for cofactors
+    .attr('fill', d => d.entity_subtype === 'cofactor' ? '#666' : '#000')  // Different color for cofactors
+    .text(d => (d.status ? `${d.nice_name}: ${d.status}` : d.nice_name) || '')
+    .call(wrap, 130)
+
+  // Add click handlers (only for non-cofactor nodes)
+  nodes.filter(d => d.entity_subtype !== 'cofactor')
+    .on('click', (event, d) => {
+      // Handle node click
+      console.log('Node clicked:', d)
+    })
+
+  // Center the graph
+  const bounds = g.node()?.getBBox()
+  if (bounds) {
+    const scale = Math.min(width / bounds.width, height / bounds.height) * 0.9
+    const tx = (width - bounds.width * scale) / 2 - bounds.x * scale
+    const ty = (height - bounds.height * scale) / 2 - bounds.y * scale
+    svg.call(zoom.transform as any, d3.zoomIdentity.translate(tx, ty).scale(scale))
+  }
 })
+
+// Helper function to create octagon points
+function octagonPoints(width: number, height: number): string {
+  const w = width * 0.3
+  const points = [
+    [-width + w, -height],
+    [width - w, -height],
+    [width, -height + w],
+    [width, height - w],
+    [width - w, height],
+    [-width + w, height],
+    [-width, height - w],
+    [-width, -height + w]
+  ]
+  return points.map(p => p.join(',')).join(' ')
+}
+
+// Helper function to wrap text
+function wrap(text: d3.Selection<any, any, any, any>, width: number) {
+  text.each(function() {
+    const text = d3.select(this)
+    const words = text.text().split(/\s+/).reverse()
+    let word
+    let line: string[] = []
+    let lineNumber = 0
+    const lineHeight = 1.1
+    const y = text.attr('y')
+    const dy = parseFloat(text.attr('dy')) || 0
+    let tspan = text.text(null).append('tspan').attr('x', 0).attr('y', y).attr('dy', dy + 'em')
+    
+    while (word = words.pop()) {
+      line.push(word)
+      tspan.text(line.join(' '))
+      if ((tspan.node()?.getComputedTextLength() || 0) > width) {
+        line.pop()
+        tspan.text(line.join(' '))
+        line = [word]
+        tspan = text.append('tspan').attr('x', 0).attr('y', y).attr('dy', ++lineNumber * lineHeight + dy + 'em').text(word)
+      }
+    }
+  })
+}
 </script>
 
 <template>

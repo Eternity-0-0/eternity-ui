@@ -10,28 +10,59 @@ export interface SizeConfig {
     groupPadding: number;
 }
 
+export type NodeShape = 'ellipse' | 'rectangle' | 'octagon';
+
 export class Node {
     id: string;
+    name: string;
     nice_name: string;
     type: string;
+    entity_subtype?: string;
     group?: string;
     status?: string;
-    position?: Position;
+    center?: Position;
+    shape: NodeShape;
+    width: number;
+    height: number;
 
     constructor(data: {
         id: string;
+        name: string;
         nice_name: string;
         type: string;
+        entity_subtype?: string;
         group?: string;
         status?: string;
-        position?: Position;
+        center?: Position;
+        shape?: NodeShape;
+        width?: number;
+        height?: number;
     }) {
         this.id = data.id;
+        this.name = data.name;
         this.nice_name = data.nice_name;
         this.type = data.type;
+        this.entity_subtype = data.entity_subtype;
         this.group = data.group;
         this.status = data.status;
-        this.position = data.position;
+        this.center = data.center;
+        
+        // Set shape based on type if not provided
+        this.shape = data.shape || this.getDefaultShape(data.type);
+        this.width = data.width || 140;  // Default width
+        this.height = data.height || 60;  // Default height
+    }
+
+    private getDefaultShape(type: string): NodeShape {
+        switch (type) {
+            case 'process':
+                return 'rectangle';
+            case 'effect':
+                return 'octagon';
+            case 'entity':
+            default:
+                return 'ellipse';
+        }
     }
 }
 
