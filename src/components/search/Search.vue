@@ -7,6 +7,9 @@
         @input="onInput"
         @focus="isFocused = true"
         @blur="isFocused = false"
+        @keydown.down.prevent="navigateDown"
+        @keydown.up.prevent="navigateUp"
+        @keydown.enter="selectHighlighted"
         placeholder="Search..."
         class="search-input"
       />
@@ -73,17 +76,44 @@
         if (this.query.trim()) {
           const results = this.fuse.search(this.query);
           this.suggestions = results.slice(0, 10).map((result) => result.item); // Limit to 10 results
+          this.hoveredIndex = null; // Reset hover index when suggestions change
         } else {
           this.suggestions = [];
+          this.hoveredIndex = null;
         }
       },
       selectSuggestion(item) {
         this.query = ""; // Clear the search input
         this.$emit('search', item);
         this.suggestions = [];
+        this.hoveredIndex = null;
       },
       handleClickOutside() {
         this.suggestions = [];
+        this.hoveredIndex = null;
+      },
+      navigateDown() {
+        if (this.suggestions.length) {
+          if (this.hoveredIndex === null) {
+            this.hoveredIndex = 0;
+          } else {
+            this.hoveredIndex = (this.hoveredIndex + 1) % this.suggestions.length;
+          }
+        }
+      },
+      navigateUp() {
+        if (this.suggestions.length) {
+          if (this.hoveredIndex === null) {
+            this.hoveredIndex = this.suggestions.length - 1;
+          } else {
+            this.hoveredIndex = (this.hoveredIndex - 1 + this.suggestions.length) % this.suggestions.length;
+          }
+        }
+      },
+      selectHighlighted() {
+        if (this.hoveredIndex !== null && this.suggestions[this.hoveredIndex]) {
+          this.selectSuggestion(this.suggestions[this.hoveredIndex]);
+        }
       },
     },
   };
