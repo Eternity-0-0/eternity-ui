@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import cytoscape from 'cytoscape'
 import ELK from 'elkjs/lib/elk.bundled.js'
 import type { GraphData } from '@/models/GraphData'
+import { fetchGraphData } from '@/services/api'
 
 // Add props definition
 const props = defineProps<{
@@ -14,8 +15,7 @@ const container = ref<HTMLElement | null>(null)
 onMounted(async () => {
   if (!container.value) return
 
-  const response = await fetch(`http://localhost:8000/graphs/${props.graphName}`)
-  const data: GraphData = await response.json()
+  const data = await fetchGraphData(props.graphName)
 
   const elk = new ELK()
 
