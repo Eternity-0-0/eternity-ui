@@ -11,13 +11,15 @@ export interface SizeConfig {
 }
 
 export type NodeShape = 'ellipse' | 'rectangle' | 'octagon';
+export type NodeType = 'entity' | 'process' | 'effect';
+export type EntitySubtype = 'main' | 'cofactor';
 
 export class Node {
     id: string;
     name: string;
     nice_name: string;
-    type: string;
-    entity_subtype?: string;
+    type: NodeType;
+    entity_subtype?: EntitySubtype;  // Only defined when type is 'entity'
     group?: string;
     status?: string;
     center?: Position;
@@ -29,8 +31,8 @@ export class Node {
         id: string;
         name: string;
         nice_name: string;
-        type: string;
-        entity_subtype?: string;
+        type: NodeType;
+        entity_subtype?: EntitySubtype;
         group?: string;
         status?: string;
         center?: Position;
@@ -42,7 +44,12 @@ export class Node {
         this.name = data.name;
         this.nice_name = data.nice_name;
         this.type = data.type;
-        this.entity_subtype = data.entity_subtype;
+        
+        // Only set entity_subtype if type is 'entity'
+        if (data.type === 'entity') {
+            this.entity_subtype = data.entity_subtype || 'main';
+        }
+        
         this.group = data.group;
         this.status = data.status;
         this.center = data.center;
@@ -53,7 +60,7 @@ export class Node {
         this.height = data.height || 60;  // Default height
     }
 
-    private getDefaultShape(type: string): NodeShape {
+    private getDefaultShape(type: NodeType): NodeShape {
         switch (type) {
             case 'process':
                 return 'rectangle';

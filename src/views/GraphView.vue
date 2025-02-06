@@ -7,6 +7,7 @@ import { fetchGraphData } from '@/services/api'
 import { computeArrowPoint } from '@/services/arrowHelper'
 import { computeGraphLayout } from '@/services/layout_graph'
 import { resolveGraphShapes } from '@/services/resolve_graph_shapes'
+import { computeArrowPoints } from '@/services/arrowHelper'
 
 // Add props definition
 const props = defineProps<{
@@ -91,14 +92,19 @@ onMounted(async () => {
       if (!sourceNode?.center || !targetNode?.center) return ''
 
       try {
-        const intersectionPoint = computeArrowPoint(sourceNode, targetNode)
-        // Add a red dot at the intersection point
+        const points = computeArrowPoints(sourceNode, targetNode)
+        // Add debug dots at intersection points
         g.append('circle')
-          .attr('cx', intersectionPoint.x)
-          .attr('cy', intersectionPoint.y)
+          .attr('cx', points.start.x)
+          .attr('cy', points.start.y)
+          .attr('r', 3)
+          .attr('fill', 'green')
+        g.append('circle')
+          .attr('cx', points.end.x)
+          .attr('cy', points.end.y)
           .attr('r', 3)
           .attr('fill', 'red')
-        return `M ${sourceNode.center.x},${sourceNode.center.y} L ${intersectionPoint.x},${intersectionPoint.y}`
+        return `M ${points.start.x},${points.start.y} L ${points.end.x},${points.end.y}`
       } catch (e: any) {
         return `M ${sourceNode.center.x},${sourceNode.center.y} L ${targetNode.center.x},${targetNode.center.y}`
       }

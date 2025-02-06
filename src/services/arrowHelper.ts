@@ -1,19 +1,49 @@
 import { Node, Position } from '@/models/GraphData'
 
+interface ArrowPoints {
+    start: Position;
+    end: Position;
+}
+
 /**
- * Computes the intersection point of a line with an ellipse
- * @param source Source node of the edge
- * @param target Target node of the edge (must be an ellipse)
- * @returns The point where the arrow should be drawn
+ * Computes the intersection points for both ends of an arrow between two nodes
  */
-export function computeArrowPoint(source: Node, target: Node): Position {
+export function computeArrowPoints(source: Node, target: Node): ArrowPoints {
     if (!source.center || !target.center) {
         throw new Error('Both nodes must have center positions')
     }
 
-    // If target is not an ellipse, throw error for now
-    if (target.shape !== 'ellipse') {
-        throw new Error('Target node must be an ellipse')
+    const { x: x1, y: y1 } = source.center
+    const { x: x2, y: y2 } = target.center
+
+    // Get end points based on node shapes
+    const start = computeIntersection(x2, y2, x1, y1, source)  // From target to source for start point
+    const end = computeIntersection(x1, y1, x2, y2, target)    // From source to target for end point
+
+    return { start, end }
+}
+
+/**
+ * Computes intersection with a node of any shape
+ */
+function computeIntersection(x1: number, y1: number, x2: number, y2: number, node: Node): Position {
+    switch (node.shape) {
+        case 'ellipse':
+            return computeEllipseIntersection(x1, y1, x2, y2, node.width / 2, node.height / 2)
+        case 'rectangle':
+            return computeRectangleIntersection(x1, y1, x2, y2, node.width, node.height)
+        default:
+            // For now, treat octagon as rectangle
+            return computeRectangleIntersection(x1, y1, x2, y2, node.width, node.height)
+    }
+}
+
+/**
+ * Computes the intersection point of a line with a node shape
+ */
+export function computeArrowPoint(source: Node, target: Node): Position {
+    if (!source.center || !target.center) {
+        throw new Error('Both nodes must have center positions')
     }
 
     const { x: x1, y: y1 } = source.center
@@ -26,62 +56,100 @@ export function computeArrowPoint(source: Node, target: Node): Position {
     // Get the angle of the line
     const angle = Math.atan2(dy, dx)
 
-    // Ellipse parameters (a is half width, b is half height)
-    const a = target.width / 2
-    const b = target.height / 2
-
-    // Calculate the intersection point
-    // For parametric equation of ellipse: x = h + a*cos(t), y = k + b*sin(t)
-    // where (h,k) is the center of ellipse
-    // We need to move in the direction opposite to the line from source to target
-    const t = Math.atan2(dy * a, dx * b)  // Angle adjusted for ellipse aspect ratio
-    const intersectionX = x2 - a * Math.cos(t)
-    const intersectionY = y2 - b * Math.sin(t)
-
-    // Calculate vectors
-    const originalVector = { x: dx, y: dy }
-    const intersectionVector = { 
-        x: intersectionX - x1, 
-        y: intersectionY - y1 
+    switch (target.shape) {
+        case 'ellipse':
+            return computeEllipseIntersection(x1, y1, x2, y2, target.width / 2, target.height / 2)
+        case 'rectangle':
+            return computeRectangleIntersection(x1, y1, x2, y2, target.width, target.height)
+        default:
+            // For now, treat octagon as rectangle
+            return computeRectangleIntersection(x1, y1, x2, y2, target.width, target.height)
     }
+}
 
-    // Normalize vectors
-    const originalLength = Math.sqrt(originalVector.x * originalVector.x + originalVector.y * originalVector.y)
-    const intersectionLength = Math.sqrt(intersectionVector.x * intersectionVector.x + intersectionVector.y * intersectionVector.y)
+/**
+ * Computes intersection with an ellipse
+ */
+function computeEllipseIntersection(x1: number, y1: number, x2: number, y2: number, a: number, b: number): Position {
+    const dx = x2 - x1
+    const dy = y2 - y1
 
-    const normalizedOriginal = {
-        x: originalVector.x / originalLength,
-        y: originalVector.y / originalLength
-    }
-    const normalizedIntersection = {
-        x: intersectionVector.x / intersectionLength,
-        y: intersectionVector.y / intersectionLength
-    }
-
-    // Calculate dot product of normalized vectors
-    const dotProduct = normalizedOriginal.x * normalizedIntersection.x + normalizedOriginal.y * normalizedIntersection.y
-    const isOnLine = Math.abs(dotProduct - 1) < 0.0001
-
-    console.log('Arrow point check:', {
-        originalVector,
-        intersectionVector,
-        normalizedOriginal,
-        normalizedIntersection,
-        dotProduct,
-        isOnLine,
-        source: { x: x1, y: y1 },
-        target: { x: x2, y: y2 },
-        intersection: { x: intersectionX, y: intersectionY }
-    })
-
-    if (!isOnLine) {
-        console.warn('Intersection point is not on the line between centers!')
-    }
-
+    // Get the angle adjusted for ellipse aspect ratio
+    const t = Math.atan2(dy * a, dx * b)
+    
     return {
-        x: intersectionX,
-        y: intersectionY
+        x: x2 - a * Math.cos(t),
+        y: y2 - b * Math.sin(t)
     }
+}
+
+/**
+ * Computes intersection with a rectangle
+ */
+function computeRectangleIntersection(x1: number, y1: number, x2: number, y2: number, width: number, height: number): Position {
+    const halfWidth = width / 2
+    const halfHeight = height / 2
+    
+    // Vector from source to target center
+    const dx = x2 - x1
+    const dy = y2 - y1
+    
+    // Normalize the vector
+    const length = Math.sqrt(dx * dx + dy * dy)
+    const nx = dx / length
+    const ny = dy / length
+    
+    // Find intersection with rectangle edges
+    // We'll find all possible intersections and choose the closest one to the source
+    const intersections: Position[] = []
+    
+    // Check vertical edges
+    const tx1 = (x2 - halfWidth - x1) / nx  // Left edge
+    const tx2 = (x2 + halfWidth - x1) / nx  // Right edge
+    
+    if (tx1 >= 0) {
+        const y = y1 + ny * tx1
+        if (Math.abs(y - y2) <= halfHeight) {
+            intersections.push({ x: x2 - halfWidth, y })
+        }
+    }
+    if (tx2 >= 0) {
+        const y = y1 + ny * tx2
+        if (Math.abs(y - y2) <= halfHeight) {
+            intersections.push({ x: x2 + halfWidth, y })
+        }
+    }
+    
+    // Check horizontal edges
+    const ty1 = (y2 - halfHeight - y1) / ny  // Top edge
+    const ty2 = (y2 + halfHeight - y1) / ny  // Bottom edge
+    
+    if (ty1 >= 0) {
+        const x = x1 + nx * ty1
+        if (Math.abs(x - x2) <= halfWidth) {
+            intersections.push({ x, y: y2 - halfHeight })
+        }
+    }
+    if (ty2 >= 0) {
+        const x = x1 + nx * ty2
+        if (Math.abs(x - x2) <= halfWidth) {
+            intersections.push({ x, y: y2 + halfHeight })
+        }
+    }
+    
+    // Find the closest intersection to the source point
+    let closestDist = Infinity
+    let closestPoint = { x: x2, y: y2 }  // Default to center if no intersection found
+    
+    intersections.forEach(point => {
+        const dist = (point.x - x1) * (point.x - x1) + (point.y - y1) * (point.y - y1)
+        if (dist < closestDist) {
+            closestDist = dist
+            closestPoint = point
+        }
+    })
+    
+    return closestPoint
 }
 
 /**
