@@ -47,7 +47,6 @@ onMounted(async () => {
     .attr('width', width)
     .attr('height', height)
     .attr('viewBox', [0, 0, width, height])
-    .style('background-color', '#f5f8fb')
 
   // Create a group for zoom/pan
   const g = svg.append('g')
@@ -75,7 +74,7 @@ onMounted(async () => {
       .attr('orient', 'auto')
       .append('path')
       .attr('d', 'M0,-5L10,0L0,5')
-      .attr('fill', '#aaa')
+      .attr('fill', 'var(--edge-color-dark)')
   })
 
   // Draw edges with appropriate markers
@@ -84,7 +83,7 @@ onMounted(async () => {
     .enter()
     .append('path')
     .attr('fill', 'none')
-    .attr('stroke', '#aaa')
+    .attr('stroke', 'var(--edge-color-dark)')
     .attr('stroke-width', 1.5)
     .attr('d', d => {
       const sourceNode = graphWithLayout.nodes.find(n => n.id === d.source)
@@ -144,24 +143,24 @@ onMounted(async () => {
           .attr('height', 60)
           .attr('x', -70)
           .attr('y', -30)
-          .attr('fill', '#ffffff')
-          .attr('stroke', '#666')
+          .attr('fill', 'var(--node-background-color-dark)')
+          .attr('stroke', 'var(--node-stroke-color-dark)')
           .attr('stroke-width', 1.5)
           .attr('rx', 5)
       } else if (d.type === 'entity') {
         node.append('ellipse')
           .attr('rx', 70)
           .attr('ry', 30)
-          .attr('fill', '#ffffff')
-          .attr('stroke', '#666')
+          .attr('fill', 'var(--node-background-color-dark)')
+          .attr('stroke', 'var(--node-stroke-color-dark)')
           .attr('stroke-width', 1.5)
       } else if (d.type === 'effect') {
         // Octagon for effect nodes
         const points = octagonPoints(70, 30)
         node.append('polygon')
           .attr('points', points)
-          .attr('fill', '#ffffff')
-          .attr('stroke', '#666')
+          .attr('fill', 'var(--node-background-color-dark)')
+          .attr('stroke', 'var(--node-stroke-color-dark)')
           .attr('stroke-width', 1.5)
       }
     }
@@ -172,7 +171,7 @@ onMounted(async () => {
     .attr('text-anchor', 'middle')
     .attr('dy', '0.35em')
     .attr('font-size', d => d.entity_subtype === 'cofactor' ? '14px' : '16px')  // Slightly smaller text for cofactors
-    .attr('fill', d => d.entity_subtype === 'cofactor' ? '#666' : '#000')  // Different color for cofactors
+    .attr('fill', 'var(--text-color-dark)')  // White text for all nodes
     .text(d => (d.status ? `${d.nice_name}: ${d.status}` : d.nice_name) || '')
     .call(wrap, 130)
 
@@ -244,7 +243,7 @@ function wrap(text: d3.Selection<any, any, any, any>, width: number) {
 .graph-container {
   width: 100%;
   height: 100%;
-  min-height: 800px;
-  background-color: #f5f8fb;
+  min-height: 100%;
+  flex: 1;
 }
 </style>
