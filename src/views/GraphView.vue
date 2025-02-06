@@ -273,7 +273,7 @@ onMounted(async () => {
   // Center the graph
   const bounds = g.node()?.getBBox()
   if (bounds) {
-    const scale = Math.min(width / bounds.width, height / bounds.height) * 0.9
+    const scale = Math.min(width / bounds.width, height / bounds.height) * 0.99
     const tx = (width - bounds.width * scale) / 2 - bounds.x * scale
     const ty = (height - bounds.height * scale) / 2 - bounds.y * scale
     svg.call(zoom.transform as any, d3.zoomIdentity.translate(tx, ty).scale(scale))
