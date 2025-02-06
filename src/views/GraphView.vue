@@ -160,12 +160,79 @@ onMounted(async () => {
   // Add node labels
   nodes.append('text')
     .attr('text-anchor', 'middle')
-    .attr('dy', '0.35em')
-    .attr('font-size', d => d.entity_subtype === 'cofactor' ? '14px' : '16px')
+    .attr('dy', '0.3em')
     .attr('font-family', 'var(--font-family)')
     .attr('fill', 'var(--text-color-dark)')
     .text(d => (d.status ? `${d.nice_name}: ${d.status}` : d.nice_name) || '')
-    .call(wrap, 130)
+    .each(function(d: any) {
+      const text = d3.select(this);
+      let fontSize = d.entity_subtype === 'cofactor' ? 14 : 16;
+      const minFontSize = 8;
+      const maxWidth = 120;
+      const maxHeight = 50; // Maximum height for text (node height - padding)
+      const lineHeight = 1.2;
+      
+      // Function to wrap and measure text
+      function wrapAndMeasure() {
+        // Store original text and clear existing tspans
+        const originalText = text.text();
+        text.text(null);
+        
+        // Split by spaces but preserve them
+        const words = originalText.match(/\S+|\s+/g) || [];
+        let line: string[] = [];
+        let lineCount = 0;
+        let tspan = text.append('tspan').attr('x', 0);
+        
+        for (let word of words) {
+          line.push(word);
+          tspan.text(line.join(''));  // Join without extra space since spaces are preserved in words
+          if (tspan.node()!.getComputedTextLength() > maxWidth) {
+            line.pop();
+            if (line.length) {
+              tspan.text(line.join(''));
+              line = [word];
+              tspan = text.append('tspan').attr('x', 0).attr('dy', lineHeight + 'em').text(word);
+              lineCount++;
+            }
+          }
+        }
+        
+        // Handle the last line if it's not empty
+        if (line.length > 0 && tspan.text() !== line.join('')) {
+          tspan.text(line.join(''));
+        }
+        
+        return {
+          width: Math.max(...Array.from(text.selectAll('tspan').nodes())
+            .map(node => (node as SVGTextElement).getComputedTextLength())),
+          height: (lineCount + 1) * lineHeight * fontSize
+        };
+      }
+      
+      // Initial font size
+      text.attr('font-size', fontSize + 'px');
+      let metrics = wrapAndMeasure();
+      
+      // Adjust font size if text is too tall or any line is too wide
+      while ((metrics.height > maxHeight || metrics.width > maxWidth) && fontSize > minFontSize) {
+        fontSize--;
+        text.attr('font-size', fontSize + 'px');
+        metrics = wrapAndMeasure();
+      }
+      
+      // Final wrapping with adjusted font size
+      const totalLines = text.selectAll('tspan').size();
+      const totalHeight = totalLines * lineHeight;
+      const startY = -(totalHeight / 2) + (lineHeight / 2);
+      
+      // Adjust vertical positions of all tspans
+      text.selectAll('tspan')
+        .attr('dy', (_, i) => {
+          if (i === 0) return startY + 0.3 + 'em';
+          return lineHeight + 'em';
+        });
+    })
 
   // Add neon effect overlays
   nodes.each(function(d: any) {
@@ -226,31 +293,6 @@ function octagonPoints(width: number, height: number): string {
     [-width, -height + w]
   ]
   return points.map(p => p.join(',')).join(' ')
-}
-
-function wrap(text: d3.Selection<any, any, any, any>, width: number) {
-  text.each(function() {
-    const text = d3.select(this)
-    const words = text.text().split(/\s+/).reverse()
-    let word
-    let line: string[] = []
-    let lineNumber = 0
-    const lineHeight = 1.1
-    const y = text.attr('y')
-    const dy = parseFloat(text.attr('dy')) || 0
-    let tspan = text.text(null).append('tspan').attr('x', 0).attr('y', y).attr('dy', dy + 'em')
-    
-    while (word = words.pop()) {
-      line.push(word)
-      tspan.text(line.join(' '))
-      if ((tspan.node()?.getComputedTextLength() || 0) > width) {
-        line.pop()
-        tspan.text(line.join(' '))
-        line = [word]
-        tspan = text.append('tspan').attr('x', 0).attr('y', y).attr('dy', ++lineNumber * lineHeight + dy + 'em').text(word)
-      }
-    }
-  })
 }
 </script>
 
