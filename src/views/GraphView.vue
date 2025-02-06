@@ -63,6 +63,78 @@ onMounted(async () => {
   // Add arrow marker definitions
   const defs = svg.append('defs')
 
+  // Add neon glow filter
+  const filter = defs.append('filter')
+    .attr('id', 'neon-glow')
+    .attr('width', '400%')
+    .attr('height', '400%')
+    .attr('x', '-150%')
+    .attr('y', '-150%')
+    
+  // Outer glow
+  filter.append('feGaussianBlur')
+    .attr('in', 'SourceAlpha')
+    .attr('stdDeviation', '4')
+    .attr('result', 'blurOuter')
+  
+  filter.append('feFlood')
+    .attr('flood-color', 'white')
+    .attr('flood-opacity', '1')
+    .attr('result', 'colorOuter')
+  
+  filter.append('feComposite')
+    .attr('in', 'colorOuter')
+    .attr('in2', 'blurOuter')
+    .attr('operator', 'in')
+    .attr('result', 'outerGlow')
+    
+  // Inner glow
+  filter.append('feComponentTransfer')
+    .attr('in', 'SourceAlpha')
+    .attr('result', 'alphaInverted')
+    .html('<feFuncA type="table" tableValues="1 0" />')
+  
+  filter.append('feGaussianBlur')
+    .attr('in', 'alphaInverted')
+    .attr('stdDeviation', '2')
+    .attr('result', 'blurInner')
+  
+  filter.append('feComposite')
+    .attr('in', 'blurInner')
+    .attr('in2', 'SourceAlpha')
+    .attr('operator', 'arithmetic')
+    .attr('k2', '-1')
+    .attr('k3', '1')
+    .attr('result', 'innerGlow')
+  
+  filter.append('feFlood')
+    .attr('flood-color', 'white')
+    .attr('flood-opacity', '1')
+    .attr('result', 'colorInner')
+  
+  filter.append('feComposite')
+    .attr('in', 'colorInner')
+    .attr('in2', 'innerGlow')
+    .attr('operator', 'in')
+    .attr('result', 'coloredInnerGlow')
+  
+  // Merge outer glow, inner glow, and original graphic
+  const feMerge = filter.append('feMerge')
+  feMerge.append('feMergeNode').attr('in', 'outerGlow')
+  feMerge.append('feMergeNode').attr('in', 'coloredInnerGlow')
+  feMerge.append('feMergeNode').attr('in', 'SourceGraphic')
+
+  // In the defs block, add overlay blur filter
+  const overlayFilter = defs.append('filter')
+    .attr('id', 'overlay-blur')
+    .attr('width', '200%')
+    .attr('height', '200%')
+    .attr('x', '-50%')
+    .attr('y', '-50%');
+  overlayFilter.append('feGaussianBlur')
+    .attr('in', 'SourceGraphic')
+    .attr('stdDeviation', '1');
+
   Object.entries(markerConfigs).forEach(([_, config]) => {
     defs.append('marker')
       .attr('id', config.id)
@@ -145,7 +217,8 @@ onMounted(async () => {
           .attr('y', -30)
           .attr('fill', 'var(--node-background-color-dark)')
           .attr('stroke', 'var(--node-stroke-color-dark)')
-          .attr('stroke-width', 1.5)
+          .attr('stroke-width', 1)
+          .attr('filter', 'url(#neon-glow)')
           .attr('rx', 5)
       } else if (d.type === 'entity') {
         node.append('ellipse')
@@ -153,7 +226,8 @@ onMounted(async () => {
           .attr('ry', 30)
           .attr('fill', 'var(--node-background-color-dark)')
           .attr('stroke', 'var(--node-stroke-color-dark)')
-          .attr('stroke-width', 1.5)
+          .attr('stroke-width', 1)
+          .attr('filter', 'url(#neon-glow)')
       } else if (d.type === 'effect') {
         // Octagon for effect nodes
         const points = octagonPoints(70, 30)
@@ -161,7 +235,8 @@ onMounted(async () => {
           .attr('points', points)
           .attr('fill', 'var(--node-background-color-dark)')
           .attr('stroke', 'var(--node-stroke-color-dark)')
-          .attr('stroke-width', 1.5)
+          .attr('stroke-width', 1)
+          .attr('filter', 'url(#neon-glow)')
       }
     }
   })
@@ -181,6 +256,45 @@ onMounted(async () => {
       // Handle node click
       console.log('Node clicked:', d)
     })
+
+  // Add overlay neon blur for nodes based on their shape
+  nodes.each(function(d: any) {
+    // Skip nodes without border (if stroke-width is 0) or cofactors
+    if (d.entity_subtype === 'cofactor' || d.strokeWidth === 0) return;
+    const nodeSel = d3.select(this);
+    if (d.type === 'process') {
+      // Rectangular node overlay
+      nodeSel.append('rect')
+        .attr('width', d.width)
+        .attr('height', d.height)
+        .attr('x', -d.width/2)
+        .attr('y', -d.height/2)
+        .attr('fill', 'none')
+        .attr('stroke', 'white')
+        .attr('stroke-width', 2)
+        .attr('filter', 'url(#overlay-blur)');
+    } else if (d.type === 'entity') {
+      // Elliptical node overlay
+      nodeSel.append('ellipse')
+        .attr('cx', 0)
+        .attr('cy', 0)
+        .attr('rx', d.width/2)
+        .attr('ry', d.height/2)
+        .attr('fill', 'none')
+        .attr('stroke', 'white')
+        .attr('stroke-width', 2)
+        .attr('filter', 'url(#overlay-blur)');
+    } else if (d.type === 'effect') {
+      // Octagon (polygon) overlay for effect nodes
+      const points = octagonPoints(d.width/2, d.height/2);
+      nodeSel.append('polygon')
+        .attr('points', points)
+        .attr('fill', 'none')
+        .attr('stroke', 'white')
+        .attr('stroke-width', 2)
+        .attr('filter', 'url(#overlay-blur)');
+    }
+  });
 
   // Center the graph
   const bounds = g.node()?.getBBox()
