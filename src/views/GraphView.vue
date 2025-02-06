@@ -4,12 +4,10 @@ import * as d3 from 'd3'
 import ELK from 'elkjs/lib/elk.bundled.js'
 import type { GraphData, NodeShape } from '@/models/GraphData'
 import { fetchGraphData } from '@/services/api'
-import { computeArrowPoint } from '@/services/arrowHelper'
+import { computeArrowPoints } from '@/services/arrowHelper'
 import { computeGraphLayout } from '@/services/layout_graph'
 import { resolveGraphShapes } from '@/services/resolve_graph_shapes'
-import { computeArrowPoints } from '@/services/arrowHelper'
 
-// Add props definition
 const props = defineProps<{
   graphName: string
 }>()
@@ -63,68 +61,7 @@ onMounted(async () => {
   // Add arrow marker definitions
   const defs = svg.append('defs')
 
-  // Add neon glow filter
-  const filter = defs.append('filter')
-    .attr('id', 'neon-glow')
-    .attr('width', '400%')
-    .attr('height', '400%')
-    .attr('x', '-150%')
-    .attr('y', '-150%')
-    
-  // Outer glow
-  filter.append('feGaussianBlur')
-    .attr('in', 'SourceAlpha')
-    .attr('stdDeviation', '4')
-    .attr('result', 'blurOuter')
-  
-  filter.append('feFlood')
-    .attr('flood-color', 'white')
-    .attr('flood-opacity', '1')
-    .attr('result', 'colorOuter')
-  
-  filter.append('feComposite')
-    .attr('in', 'colorOuter')
-    .attr('in2', 'blurOuter')
-    .attr('operator', 'in')
-    .attr('result', 'outerGlow')
-    
-  // Inner glow
-  filter.append('feComponentTransfer')
-    .attr('in', 'SourceAlpha')
-    .attr('result', 'alphaInverted')
-    .html('<feFuncA type="table" tableValues="1 0" />')
-  
-  filter.append('feGaussianBlur')
-    .attr('in', 'alphaInverted')
-    .attr('stdDeviation', '2')
-    .attr('result', 'blurInner')
-  
-  filter.append('feComposite')
-    .attr('in', 'blurInner')
-    .attr('in2', 'SourceAlpha')
-    .attr('operator', 'arithmetic')
-    .attr('k2', '-1')
-    .attr('k3', '1')
-    .attr('result', 'innerGlow')
-  
-  filter.append('feFlood')
-    .attr('flood-color', 'white')
-    .attr('flood-opacity', '1')
-    .attr('result', 'colorInner')
-  
-  filter.append('feComposite')
-    .attr('in', 'colorInner')
-    .attr('in2', 'innerGlow')
-    .attr('operator', 'in')
-    .attr('result', 'coloredInnerGlow')
-  
-  // Merge outer glow, inner glow, and original graphic
-  const feMerge = filter.append('feMerge')
-  feMerge.append('feMergeNode').attr('in', 'outerGlow')
-  feMerge.append('feMergeNode').attr('in', 'coloredInnerGlow')
-  feMerge.append('feMergeNode').attr('in', 'SourceGraphic')
-
-  // In the defs block, add overlay blur filter
+  // Add overlay blur filter
   const overlayFilter = defs.append('filter')
     .attr('id', 'overlay-blur')
     .attr('width', '200%')
@@ -133,7 +70,7 @@ onMounted(async () => {
     .attr('y', '-50%');
   overlayFilter.append('feGaussianBlur')
     .attr('in', 'SourceGraphic')
-    .attr('stdDeviation', '1');
+    .attr('stdDeviation', '2');
 
   Object.entries(markerConfigs).forEach(([_, config]) => {
     defs.append('marker')
@@ -149,7 +86,7 @@ onMounted(async () => {
       .attr('fill', 'var(--edge-color-dark)')
   })
 
-  // Draw edges with appropriate markers
+  // Draw edges
   const links = g.selectAll('path')
     .data(graphWithLayout.edges)
     .enter()
@@ -164,17 +101,6 @@ onMounted(async () => {
 
       try {
         const points = computeArrowPoints(sourceNode, targetNode)
-        // Add debug dots at intersection points
-        g.append('circle')
-          .attr('cx', points.start.x)
-          .attr('cy', points.start.y)
-          .attr('r', 3)
-          .attr('fill', 'green')
-        g.append('circle')
-          .attr('cx', points.end.x)
-          .attr('cy', points.end.y)
-          .attr('r', 3)
-          .attr('fill', 'red')
         return `M ${points.start.x},${points.start.y} L ${points.end.x},${points.end.y}`
       } catch (e: any) {
         return `M ${sourceNode.center.x},${sourceNode.center.y} L ${targetNode.center.x},${targetNode.center.y}`
@@ -199,16 +125,10 @@ onMounted(async () => {
     .attr('class', 'node')
     .attr('transform', d => `translate(${d.center?.x || 0},${d.center?.y || 0})`)
 
-  // Add center point indicators
-  nodes.append('circle')
-    .attr('r', 3)
-    .attr('fill', 'blue')
-    .attr('class', 'center-point')
-
-  // Add different shapes based on node type (except for cofactors)
+  // Add different shapes based on node type
   nodes.each(function(d) {
     const node = d3.select(this)
-    if (d.entity_subtype !== 'cofactor') {  // Only draw shapes for non-cofactor nodes
+    if (d.entity_subtype !== 'cofactor') {
       if (d.type === 'process') {
         node.append('rect')
           .attr('width', 140)
@@ -217,8 +137,7 @@ onMounted(async () => {
           .attr('y', -30)
           .attr('fill', 'var(--node-background-color-dark)')
           .attr('stroke', 'var(--node-stroke-color-dark)')
-          .attr('stroke-width', 1)
-          .attr('filter', 'url(#neon-glow)')
+          .attr('stroke-width', 'var(--node-stroke-width)')
           .attr('rx', 5)
       } else if (d.type === 'entity') {
         node.append('ellipse')
@@ -226,72 +145,60 @@ onMounted(async () => {
           .attr('ry', 30)
           .attr('fill', 'var(--node-background-color-dark)')
           .attr('stroke', 'var(--node-stroke-color-dark)')
-          .attr('stroke-width', 1)
-          .attr('filter', 'url(#neon-glow)')
+          .attr('stroke-width', 'var(--node-stroke-width)')
       } else if (d.type === 'effect') {
-        // Octagon for effect nodes
         const points = octagonPoints(70, 30)
         node.append('polygon')
           .attr('points', points)
           .attr('fill', 'var(--node-background-color-dark)')
           .attr('stroke', 'var(--node-stroke-color-dark)')
-          .attr('stroke-width', 1)
-          .attr('filter', 'url(#neon-glow)')
+          .attr('stroke-width', 'var(--node-stroke-width)')
       }
     }
   })
 
-  // Add node labels (for all nodes including cofactors)
+  // Add node labels
   nodes.append('text')
     .attr('text-anchor', 'middle')
     .attr('dy', '0.35em')
-    .attr('font-size', d => d.entity_subtype === 'cofactor' ? '14px' : '16px')  // Slightly smaller text for cofactors
-    .attr('fill', 'var(--text-color-dark)')  // White text for all nodes
+    .attr('font-size', d => d.entity_subtype === 'cofactor' ? '14px' : '16px')
+    .attr('font-family', 'var(--font-family)')
+    .attr('fill', 'var(--text-color-dark)')
     .text(d => (d.status ? `${d.nice_name}: ${d.status}` : d.nice_name) || '')
     .call(wrap, 130)
 
-  // Add click handlers (only for non-cofactor nodes)
-  nodes.filter(d => d.entity_subtype !== 'cofactor')
-    .on('click', (event, d) => {
-      // Handle node click
-      console.log('Node clicked:', d)
-    })
-
-  // Add overlay neon blur for nodes based on their shape
+  // Add neon effect overlays
   nodes.each(function(d: any) {
-    // Skip nodes without border (if stroke-width is 0) or cofactors
-    if (d.entity_subtype === 'cofactor' || d.strokeWidth === 0) return;
+    if (d.entity_subtype === 'cofactor') return;
     const nodeSel = d3.select(this);
     if (d.type === 'process') {
-      // Rectangular node overlay
       nodeSel.append('rect')
-        .attr('width', d.width)
-        .attr('height', d.height)
-        .attr('x', -d.width/2)
-        .attr('y', -d.height/2)
+        .attr('width', 140)
+        .attr('height', 60)
+        .attr('x', -70)
+        .attr('y', -30)
         .attr('fill', 'none')
         .attr('stroke', 'white')
-        .attr('stroke-width', 2)
-        .attr('filter', 'url(#overlay-blur)');
+        .attr('stroke-width', 'var(--node-stroke-width)')
+        .attr('filter', 'url(#overlay-blur)')
+        .attr('rx', 5);
     } else if (d.type === 'entity') {
-      // Elliptical node overlay
       nodeSel.append('ellipse')
         .attr('cx', 0)
         .attr('cy', 0)
-        .attr('rx', d.width/2)
-        .attr('ry', d.height/2)
+        .attr('rx', 70)
+        .attr('ry', 30)
         .attr('fill', 'none')
         .attr('stroke', 'white')
-        .attr('stroke-width', 2)
+        .attr('stroke-width', 'var(--node-stroke-width)')
         .attr('filter', 'url(#overlay-blur)');
     } else if (d.type === 'effect') {
-      // Octagon (polygon) overlay for effect nodes
-      const points = octagonPoints(d.width/2, d.height/2);
+      const points = octagonPoints(70, 30);
       nodeSel.append('polygon')
         .attr('points', points)
         .attr('fill', 'none')
         .attr('stroke', 'white')
-        .attr('stroke-width', 2)
+        .attr('stroke-width', 'var(--node-stroke-width)')
         .attr('filter', 'url(#overlay-blur)');
     }
   });
@@ -306,7 +213,6 @@ onMounted(async () => {
   }
 })
 
-// Helper function to create octagon points
 function octagonPoints(width: number, height: number): string {
   const w = width * 0.3
   const points = [
@@ -322,7 +228,6 @@ function octagonPoints(width: number, height: number): string {
   return points.map(p => p.join(',')).join(' ')
 }
 
-// Helper function to wrap text
 function wrap(text: d3.Selection<any, any, any, any>, width: number) {
   text.each(function() {
     const text = d3.select(this)
