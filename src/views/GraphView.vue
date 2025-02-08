@@ -7,6 +7,7 @@ import { computeArrowPoints } from '@/services/arrowHelper'
 import { computeGraphLayout } from '@/services/layout_graph'
 import { resolveGraphShapes } from '@/services/resolve_graph_shapes'
 import { renderNode, renderNeonEffect } from '@/services/node_renderer'
+import { wrapAndSizeText } from '@/services/text_wrapper'
 
 const props = defineProps<{
   graphName: string
@@ -135,81 +136,22 @@ onMounted(async () => {
     if (d.shape === 'point') return;
 
     const node = d3.select(this);
-    node.append('text')
+    const text = node.append('text')
       .attr('text-anchor', 'middle')
       .attr('dy', '0.3em')
       .attr('font-family', 'var(--font-family)')
       .attr('fill', 'var(--text-color-dark)')
-      .text((d.status ? `${d.nice_name}: ${d.status}` : d.nice_name) || '')
-      .each(function() {
-        const text = d3.select(this);
-        let fontSize = d.entity_subtype === 'cofactor' ? 14 : 16;
-        const minFontSize = 8;
-        const maxWidth = 120;
-        const maxHeight = 50; // Maximum height for text (node height - padding)
-        const lineHeight = 1.2;
-        
-        // Function to wrap and measure text
-        function wrapAndMeasure() {
-          // Store original text and clear existing tspans
-          const originalText = text.text();
-          text.text(null);
-          
-          // Split by spaces but preserve them
-          const words = originalText.match(/\S+|\s+/g) || [];
-          let line: string[] = [];
-          let lineCount = 0;
-          let tspan = text.append('tspan').attr('x', 0);
-          
-          for (let word of words) {
-            line.push(word);
-            tspan.text(line.join(''));  // Join without extra space since spaces are preserved in words
-            if (tspan.node()!.getComputedTextLength() > maxWidth) {
-              line.pop();
-              if (line.length) {
-                tspan.text(line.join(''));
-                line = [word];
-                tspan = text.append('tspan').attr('x', 0).attr('dy', lineHeight + 'em').text(word);
-                lineCount++;
-              }
-            }
-          }
-          
-          // Handle the last line if it's not empty
-          if (line.length > 0 && tspan.text() !== line.join('')) {
-            tspan.text(line.join(''));
-          }
-          
-          return {
-            width: Math.max(...Array.from(text.selectAll('tspan').nodes())
-              .map(node => (node as SVGTextElement).getComputedTextLength())),
-            height: (lineCount + 1) * lineHeight * fontSize
-          };
-        }
-        
-        // Initial font size
-        text.attr('font-size', fontSize + 'px');
-        let metrics = wrapAndMeasure();
-        
-        // Adjust font size if text is too tall or any line is too wide
-        while ((metrics.height > maxHeight || metrics.width > maxWidth) && fontSize > minFontSize) {
-          fontSize--;
-          text.attr('font-size', fontSize + 'px');
-          metrics = wrapAndMeasure();
-        }
-        
-        // Final wrapping with adjusted font size
-        const totalLines = text.selectAll('tspan').size();
-        const totalHeight = totalLines * lineHeight;
-        const startY = -(totalHeight / 2) + (lineHeight / 2);
-        
-        // Adjust vertical positions of all tspans
-        text.selectAll('tspan')
-          .attr('dy', (_, i) => {
-            if (i === 0) return startY + 0.3 + 'em';
-            return lineHeight + 'em';
-          });
-      })
+
+    wrapAndSizeText(text, 
+      (d.status ? `${d.nice_name}: ${d.status}` : d.nice_name) || '',
+      {
+        fontSize: d.entity_subtype === 'cofactor' ? 14 : 16,
+        minFontSize: 5,
+        maxWidth: 120,
+        maxHeight: 50,
+        lineHeight: 1.2
+      }
+    )
   })
 
   // Add neon effect overlays
