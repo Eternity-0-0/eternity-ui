@@ -18,7 +18,7 @@ export async function computeGraphLayout(graph: GraphData): Promise<GraphData> {
         id: 'root',
         layoutOptions: {
             'elk.algorithm': 'layered',
-            'elk.direction': 'RIGHT',
+            'elk.direction': graph.rendering_config.orientation === 'right' ? 'RIGHT' : 'DOWN',
             'elk.spacing.nodeNode': '40',
             'elk.padding': '[top=25,left=25,bottom=25,right=25]',
             'elk.hierarchyHandling': 'INCLUDE_CHILDREN',

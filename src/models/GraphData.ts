@@ -13,6 +13,11 @@ export interface SizeConfig {
 export type NodeShape = 'ellipse' | 'rectangle' | 'octagon' | 'point' | 'no';
 export type NodeType = 'entity' | 'process' | 'effect';
 export type EntitySubtype = 'main' | 'cofactor';
+export type GraphOrientation = 'down' | 'right';
+
+export interface RenderingConfig {
+    orientation: GraphOrientation;
+}
 
 export class Node {
     id: string;
@@ -75,6 +80,7 @@ export class GraphData {
     nodes: Node[];
     edges: Edge[];
     size_config?: SizeConfig;
+    rendering_config: RenderingConfig;
 
     constructor(data: {
         name: string;
@@ -82,11 +88,13 @@ export class GraphData {
         nodes: Array<any>;
         edges: Array<any>;
         size_config?: SizeConfig;
+        rendering_config?: RenderingConfig;
     }) {
         this.name = data.name;
         this.nice_name = data.nice_name;
         this.nodes = data.nodes.map(node => new Node(node));
         this.edges = data.edges.map(edge => new Edge(edge));
         this.size_config = data.size_config;
+        this.rendering_config = data.rendering_config || { orientation: 'right' }; // Default to right if not provided
     }
 }

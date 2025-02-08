@@ -36,5 +36,11 @@ export async function fetchGraphData(graphName: string): Promise<GraphData> {
     throw new Error(`HTTP error! status: ${response.status}`)
   }
   const data = await response.json()
+  // Convert backend rendering config to frontend format
+  if (data.rendering_config) {
+    data.rendering_config = {
+      orientation: data.rendering_config.orientation.toLowerCase()
+    }
+  }
   return new GraphData(data)
 }
