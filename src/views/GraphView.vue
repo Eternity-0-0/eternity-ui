@@ -6,6 +6,7 @@ import { fetchGraphData } from '@/services/api'
 import { computeArrowPoints } from '@/services/arrowHelper'
 import { computeGraphLayout } from '@/services/layout_graph'
 import { resolveGraphShapes } from '@/services/resolve_graph_shapes'
+import { renderNode, renderNeonEffect } from '@/services/node_renderer'
 
 const props = defineProps<{
   graphName: string
@@ -119,38 +120,13 @@ onMounted(async () => {
   // Add different shapes based on node type
   nodes.each(function(d) {
     const node = d3.select(this)
-    if (d.entity_subtype !== 'cofactor') {
-      if (d.shape === 'point') {
-        node.append('circle')
-          .attr('r', 3.5)  // Half of 5x5 size
-          .attr('fill', 'var(--edge-color-dark)')  // Same color as arrows
-          .attr('stroke', 'none')  // No border
-      } else if (d.shape === 'rectangle') {
-        node.append('rect')
-          .attr('width', 140)
-          .attr('height', 60)
-          .attr('x', -70)
-          .attr('y', -30)
-          .attr('fill', 'var(--node-background-color-dark)')
-          .attr('stroke', 'var(--node-stroke-color-dark)')
-          .attr('stroke-width', 'var(--node-stroke-width)')
-          .attr('rx', 5)
-      } else if (d.shape === 'ellipse') {
-        node.append('ellipse')
-          .attr('rx', 70)
-          .attr('ry', 30)
-          .attr('fill', 'var(--node-background-color-dark)')
-          .attr('stroke', 'var(--node-stroke-color-dark)')
-          .attr('stroke-width', 'var(--node-stroke-width)')
-      } else if (d.shape === 'octagon') {
-        const points = octagonPoints(70, 30)
-        node.append('polygon')
-          .attr('points', points)
-          .attr('fill', 'var(--node-background-color-dark)')
-          .attr('stroke', 'var(--node-stroke-color-dark)')
-          .attr('stroke-width', 'var(--node-stroke-width)')
-      }
-    }
+    renderNode(node, d, {
+      width: d.shape === 'point' ? 7 : 140,  // 7 for point (5x5 plus padding), 140 for others
+      height: d.shape === 'point' ? 7 : 60,
+      fill: 'var(--node-background-color-dark)',
+      stroke: 'var(--node-stroke-color-dark)',
+      strokeWidth: 'var(--node-stroke-width)'
+    })
   })
 
   // Add node labels
@@ -237,40 +213,16 @@ onMounted(async () => {
   })
 
   // Add neon effect overlays
-  nodes.each(function(d: any) {
-    if (d.entity_subtype === 'cofactor' || d.shape === 'point') return;  // Skip both cofactors and points
-    const nodeSel = d3.select(this);
-    if (d.shape === 'rectangle') {
-      nodeSel.append('rect')
-        .attr('width', 140)
-        .attr('height', 60)
-        .attr('x', -70)
-        .attr('y', -30)
-        .attr('fill', 'none')
-        .attr('stroke', 'white')
-        .attr('stroke-width', 'var(--node-stroke-width)')
-        .attr('filter', 'url(#overlay-blur)')
-        .attr('rx', 5);
-    } else if (d.shape === 'ellipse') {
-      nodeSel.append('ellipse')
-        .attr('cx', 0)
-        .attr('cy', 0)
-        .attr('rx', 70)
-        .attr('ry', 30)
-        .attr('fill', 'none')
-        .attr('stroke', 'white')
-        .attr('stroke-width', 'var(--node-stroke-width)')
-        .attr('filter', 'url(#overlay-blur)');
-    } else if (d.shape === 'octagon') {
-      const points = octagonPoints(70, 30);
-      nodeSel.append('polygon')
-        .attr('points', points)
-        .attr('fill', 'none')
-        .attr('stroke', 'white')
-        .attr('stroke-width', 'var(--node-stroke-width)')
-        .attr('filter', 'url(#overlay-blur)');
-    }
-  });
+  nodes.each(function(d) {
+    const nodeSel = d3.select(this)
+    renderNeonEffect(nodeSel, d, {
+      width: d.shape === 'point' ? 7 : 140,
+      height: d.shape === 'point' ? 7 : 60,
+      fill: 'none',
+      stroke: 'white',
+      strokeWidth: 'var(--node-stroke-width)'
+    })
+  })
 
   // Move centering code to after all elements are drawn
   const bounds = g.node()?.getBBox()
