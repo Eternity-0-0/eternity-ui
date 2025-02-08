@@ -63,15 +63,3 @@ export function resolveGraphShapes(graph: GraphData): GraphData {
 
     return graph
 }
-
-function getDefaultShape(type: string): Node['shape'] {
-    switch (type) {
-        case 'process':
-            return 'rectangle'
-        case 'effect':
-            return 'octagon'
-        case 'entity':
-        default:
-            return 'ellipse'
-    }
-}
