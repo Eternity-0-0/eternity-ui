@@ -175,21 +175,6 @@ onMounted(async () => {
     g.attr('transform', `translate(${tx}, ${ty}) scale(${scale})`)
   }
 })
-
-function octagonPoints(width: number, height: number): string {
-  const w = width * 0.3
-  const points = [
-    [-width + w, -height],
-    [width - w, -height],
-    [width, -height + w],
-    [width, height - w],
-    [width - w, height],
-    [-width + w, height],
-    [-width, height - w],
-    [-width, -height + w]
-  ]
-  return points.map(p => p.join(',')).join(' ')
-}
 </script>
 
 <template>
