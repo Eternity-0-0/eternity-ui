@@ -16,15 +16,16 @@
           </div>
         </div>
         <div class="text-content">
-          <p v-for="(paragraph, index) in paragraphs" :key="index">
-            {{ paragraph }}
-          </p>
+          <!-- Changed to use htmlParagraphs with v-html to render LaTeX equations -->
+          <p v-for="(paragraph, index) in htmlParagraphs" :key="index" v-html="paragraph"></p>
         </div>
       </div>
     </div>
   </template>
   
   <script>
+  import katex from 'katex'
+  import 'katex/dist/katex.min.css'
   import { WikiBodyData } from '@/models/WikiBodyData'
   
   export default {
@@ -37,8 +38,31 @@
     },
     computed: {
       paragraphs() {
-        console.log(this.wikiBodyData);
         return this.wikiBodyData.text.split('\n').filter(p => p.trim());
+      },
+      htmlParagraphs() {
+        return this.paragraphs.map(paragraph => this.renderLatex(paragraph));
+      }
+    },
+    methods: {
+      renderLatex(text) {
+        return text
+          .replace(/\$\$([\s\S]+?)\$\$/g, (match, content) => {
+            try {
+              return katex.renderToString(content, { displayMode: true, throwOnError: false });
+            } catch (err) {
+              console.error(err);
+              return match;
+            }
+          })
+          .replace(/\$([^\$]+?)\$/g, (match, content) => {
+            try {
+              return katex.renderToString(content, { displayMode: false, throwOnError: false });
+            } catch (err) {
+              console.error(err);
+              return match;
+            }
+          });
       }
     }
   }
