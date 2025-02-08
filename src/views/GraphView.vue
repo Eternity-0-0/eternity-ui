@@ -1,34 +1,19 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import * as d3 from 'd3'
-import type { NodeShape } from '@/models/GraphData'
 import { fetchGraphData } from '@/services/api'
-import { computeArrowPoints } from '@/services/arrowHelper'
 import { computeGraphLayout } from '@/services/layout_graph'
 import { resolveGraphShapes } from '@/services/resolve_graph_shapes'
 import { renderNode, renderNeonEffect } from '@/services/node_renderer'
 import { wrapAndSizeText } from '@/services/text_wrapper'
-import { MARKER_CONFIG, NODE_SIZES, EDGE_CONFIG, FILTER_CONFIG, TEXT_CONFIG, LAYOUT_CONFIG } from '@/constants/graph'
+import { setupArrowMarkers, renderEdges } from '@/services/edge_renderer'
+import { FILTER_CONFIG, TEXT_CONFIG, LAYOUT_CONFIG, NODE_SIZES } from '@/constants/graph'
 
 const props = defineProps<{
   graphName: string
 }>()
 
 const container = ref<HTMLElement | null>(null)
-
-interface MarkerConfig {
-  id: string
-  refX: number
-}
-
-const markerConfigs: Record<NodeShape | 'cofactor', MarkerConfig> = {
-  'ellipse': { id: 'arrow-entity', refX: MARKER_CONFIG.REF_X },
-  'rectangle': { id: 'arrow-process', refX: MARKER_CONFIG.REF_X },
-  'octagon': { id: 'arrow-effect', refX: MARKER_CONFIG.REF_X },
-  'point': { id: 'arrow-process', refX: MARKER_CONFIG.REF_X },
-  'no': { id: 'arrow-cofactor', refX: MARKER_CONFIG.REF_X },
-  'cofactor': { id: 'arrow-cofactor', refX: MARKER_CONFIG.REF_X }
-}
 
 onMounted(async () => {
   if (!container.value) return
@@ -52,7 +37,7 @@ onMounted(async () => {
 
   const g = svg.append('g')
 
-  // Add arrow marker definitions
+  // Add definitions
   const defs = svg.append('defs')
 
   // Add overlay blur filter
@@ -66,50 +51,11 @@ onMounted(async () => {
     .attr('in', 'SourceGraphic')
     .attr('stdDeviation', FILTER_CONFIG.BLUR.STD_DEVIATION)
 
-  Object.entries(markerConfigs).forEach(([_, config]) => {
-    defs.append('marker')
-      .attr('id', config.id)
-      .attr('viewBox', MARKER_CONFIG.VIEW_BOX)
-      .attr('refX', config.refX)
-      .attr('refY', 0)
-      .attr('markerWidth', MARKER_CONFIG.SIZE)
-      .attr('markerHeight', MARKER_CONFIG.SIZE)
-      .attr('orient', 'auto')
-      .append('path')
-      .attr('d', MARKER_CONFIG.PATH)
-      .attr('fill', 'var(--edge-color-dark)')
-  })
+  // Setup arrow markers
+  setupArrowMarkers(defs)
 
   // Draw edges
-  const links = g.selectAll('path')
-    .data(graphWithLayout.edges)
-    .enter()
-    .append('path')
-    .attr('fill', 'none')
-    .attr('stroke', 'var(--edge-color-dark)')
-    .attr('stroke-width', EDGE_CONFIG.STROKE_WIDTH)
-    .attr('d', d => {
-      const sourceNode = graphWithLayout.nodes.find(n => n.id === d.source)
-      const targetNode = graphWithLayout.nodes.find(n => n.id === d.target)
-      if (!sourceNode?.center || !targetNode?.center) return ''
-
-      try {
-        const points = computeArrowPoints(sourceNode, targetNode)
-        return `M ${points.start.x},${points.start.y} L ${points.end.x},${points.end.y}`
-      } catch (e: any) {
-        return `M ${sourceNode.center.x},${sourceNode.center.y} L ${targetNode.center.x},${targetNode.center.y}`
-      }
-    })
-    .attr('marker-end', d => {
-      const targetNode = graphWithLayout.nodes.find(n => n.id === d.target)
-      if (!targetNode) return 'url(#arrow-entity)'
-      
-      if (targetNode.entity_subtype === 'cofactor') {
-        return `url(#${markerConfigs.cofactor.id})`
-      }
-      
-      return `url(#${markerConfigs[targetNode.shape].id})`
-    })
+  renderEdges(g, graphWithLayout.edges, graphWithLayout.nodes)
 
   // Draw nodes
   const nodes = g.selectAll('g.node')
