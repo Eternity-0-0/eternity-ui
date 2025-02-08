@@ -10,7 +10,7 @@ export interface SizeConfig {
     groupPadding: number;
 }
 
-export type NodeShape = 'ellipse' | 'rectangle' | 'octagon';
+export type NodeShape = 'ellipse' | 'rectangle' | 'octagon' | 'point' | 'no';
 export type NodeType = 'entity' | 'process' | 'effect';
 export type EntitySubtype = 'main' | 'cofactor';
 
@@ -36,7 +36,7 @@ export class Node {
         group?: string;
         status?: string;
         center?: Position;
-        shape?: NodeShape;
+        shape: NodeShape;  // Now required from backend
         width?: number;
         height?: number;
     }) {
@@ -53,23 +53,9 @@ export class Node {
         this.group = data.group;
         this.status = data.status;
         this.center = data.center;
-        
-        // Set shape based on type if not provided
-        this.shape = data.shape || this.getDefaultShape(data.type);
+        this.shape = data.shape;  // Use shape directly from backend
         this.width = data.width || 140;  // Default width
         this.height = data.height || 60;  // Default height
-    }
-
-    private getDefaultShape(type: NodeType): NodeShape {
-        switch (type) {
-            case 'process':
-                return 'rectangle';
-            case 'effect':
-                return 'octagon';
-            case 'entity':
-            default:
-                return 'ellipse';
-        }
     }
 }
 

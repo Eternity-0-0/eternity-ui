@@ -1,6 +1,20 @@
-import { GraphData, Node } from '@/models/GraphData'
+import { GraphData, Node, NodeShape } from '@/models/GraphData'
 
 const COFACTOR_PADDING = 10  // Padding around text for cofactor nodes
+
+/**
+ * Maps backend node shape to frontend shape
+ * For cofactors, always returns 'rectangle' for computation
+ * For other nodes, uses the shape from backend or defaults based on type
+ */
+function mapNodeShape(node: Node): NodeShape {
+    if (node.entity_subtype === 'cofactor') {
+        return 'rectangle'  // Always use rectangle for cofactors
+    }
+    
+    // For non-cofactors, use the node's shape (which includes default based on type)
+    return node.shape
+}
 
 /**
  * Calculates text width using a temporary SVG element
@@ -24,12 +38,18 @@ function calculateTextWidth(text: string, fontSize: number): number {
 export function resolveGraphShapes(graph: GraphData): GraphData {
     // Process each node
     graph.nodes.forEach(node => {
-        if (node.entity_subtype === 'cofactor') {
+        // Map the shape using our mapping function
+        node.shape = mapNodeShape(node)
+
+        if (node.shape === 'point') {
+            // Points should be 5x5
+            node.width = 5
+            node.height = 5
+        } else if (node.entity_subtype === 'cofactor') {
             // For cofactors, calculate minimal size based on text
             const textWidth = calculateTextWidth(node.nice_name, 14)  // 14px font size for cofactors
             node.width = textWidth + 2 * COFACTOR_PADDING
             node.height = 20  // Fixed height for single line of text
-            node.shape = 'rectangle'  // Always use rectangle for computation
         } else {
             // For main nodes, use config values
             if (!node.width) {
@@ -37,10 +57,6 @@ export function resolveGraphShapes(graph: GraphData): GraphData {
             }
             if (!node.height) {
                 node.height = graph.size_config?.nodeHeight || 60
-            }
-            // Set shape based on type if not already set
-            if (!node.shape) {
-                node.shape = getDefaultShape(node.type)
             }
         }
     })
