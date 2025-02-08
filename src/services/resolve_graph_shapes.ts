@@ -1,6 +1,5 @@
 import { GraphData, Node, NodeShape } from '@/models/GraphData'
-
-const COFACTOR_PADDING = 10  // Padding around text for cofactor nodes
+import { NODE_SIZES, TEXT_CONFIG } from '@/constants/graph'
 
 /**
  * Maps backend node shape to frontend shape
@@ -43,20 +42,20 @@ export function resolveGraphShapes(graph: GraphData): GraphData {
 
         if (node.shape === 'point') {
             // Points should be 5x5
-            node.width = 5
-            node.height = 5
+            node.width = NODE_SIZES.POINT.width
+            node.height = NODE_SIZES.POINT.height
         } else if (node.entity_subtype === 'cofactor') {
             // For cofactors, calculate minimal size based on text
-            const textWidth = calculateTextWidth(node.nice_name, 14)  // 14px font size for cofactors
-            node.width = textWidth + 2 * COFACTOR_PADDING
-            node.height = 20  // Fixed height for single line of text
+            const textWidth = calculateTextWidth(node.nice_name, TEXT_CONFIG.FONT_SIZES.COFACTOR)
+            node.width = textWidth + 2 * NODE_SIZES.COFACTOR.textPadding
+            node.height = NODE_SIZES.COFACTOR.height
         } else {
             // For main nodes, use config values
             if (!node.width) {
-                node.width = graph.size_config?.nodeWidth || 140
+                node.width = graph.size_config?.nodeWidth || NODE_SIZES.STANDARD.width
             }
             if (!node.height) {
-                node.height = graph.size_config?.nodeHeight || 60
+                node.height = graph.size_config?.nodeHeight || NODE_SIZES.STANDARD.height
             }
         }
     })

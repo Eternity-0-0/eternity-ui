@@ -8,6 +8,7 @@ import { computeGraphLayout } from '@/services/layout_graph'
 import { resolveGraphShapes } from '@/services/resolve_graph_shapes'
 import { renderNode, renderNeonEffect } from '@/services/node_renderer'
 import { wrapAndSizeText } from '@/services/text_wrapper'
+import { MARKER_CONFIG, NODE_SIZES, EDGE_CONFIG, FILTER_CONFIG, TEXT_CONFIG, LAYOUT_CONFIG } from '@/constants/graph'
 
 const props = defineProps<{
   graphName: string
@@ -21,12 +22,12 @@ interface MarkerConfig {
 }
 
 const markerConfigs: Record<NodeShape | 'cofactor', MarkerConfig> = {
-  'ellipse': { id: 'arrow-entity', refX: 8 },
-  'rectangle': { id: 'arrow-process', refX: 8 },
-  'octagon': { id: 'arrow-effect', refX: 8 },
-  'point': { id: 'arrow-process', refX: 8 },
-  'no': { id: 'arrow-cofactor', refX: 8 },
-  'cofactor': { id: 'arrow-cofactor', refX: 8 }
+  'ellipse': { id: 'arrow-entity', refX: MARKER_CONFIG.REF_X },
+  'rectangle': { id: 'arrow-process', refX: MARKER_CONFIG.REF_X },
+  'octagon': { id: 'arrow-effect', refX: MARKER_CONFIG.REF_X },
+  'point': { id: 'arrow-process', refX: MARKER_CONFIG.REF_X },
+  'no': { id: 'arrow-cofactor', refX: MARKER_CONFIG.REF_X },
+  'cofactor': { id: 'arrow-cofactor', refX: MARKER_CONFIG.REF_X }
 }
 
 onMounted(async () => {
@@ -57,25 +58,25 @@ onMounted(async () => {
   // Add overlay blur filter
   const overlayFilter = defs.append('filter')
     .attr('id', 'overlay-blur')
-    .attr('width', '200%')
-    .attr('height', '200%')
-    .attr('x', '-50%')
-    .attr('y', '-50%');
+    .attr('width', FILTER_CONFIG.BLUR.DIMENSIONS.width)
+    .attr('height', FILTER_CONFIG.BLUR.DIMENSIONS.height)
+    .attr('x', FILTER_CONFIG.BLUR.DIMENSIONS.x)
+    .attr('y', FILTER_CONFIG.BLUR.DIMENSIONS.y)
   overlayFilter.append('feGaussianBlur')
     .attr('in', 'SourceGraphic')
-    .attr('stdDeviation', '2');
+    .attr('stdDeviation', FILTER_CONFIG.BLUR.STD_DEVIATION)
 
   Object.entries(markerConfigs).forEach(([_, config]) => {
     defs.append('marker')
       .attr('id', config.id)
-      .attr('viewBox', '0 -5 10 10')
+      .attr('viewBox', MARKER_CONFIG.VIEW_BOX)
       .attr('refX', config.refX)
       .attr('refY', 0)
-      .attr('markerWidth', 6)
-      .attr('markerHeight', 6)
+      .attr('markerWidth', MARKER_CONFIG.SIZE)
+      .attr('markerHeight', MARKER_CONFIG.SIZE)
       .attr('orient', 'auto')
       .append('path')
-      .attr('d', 'M0,-5L10,0L0,5')
+      .attr('d', MARKER_CONFIG.PATH)
       .attr('fill', 'var(--edge-color-dark)')
   })
 
@@ -86,7 +87,7 @@ onMounted(async () => {
     .append('path')
     .attr('fill', 'none')
     .attr('stroke', 'var(--edge-color-dark)')
-    .attr('stroke-width', 1.5)
+    .attr('stroke-width', EDGE_CONFIG.STROKE_WIDTH)
     .attr('d', d => {
       const sourceNode = graphWithLayout.nodes.find(n => n.id === d.source)
       const targetNode = graphWithLayout.nodes.find(n => n.id === d.target)
@@ -122,8 +123,8 @@ onMounted(async () => {
   nodes.each(function(d) {
     const node = d3.select(this)
     renderNode(node, d, {
-      width: d.shape === 'point' ? 7 : 140,  // 7 for point (5x5 plus padding), 140 for others
-      height: d.shape === 'point' ? 7 : 60,
+      width: d.shape === 'point' ? NODE_SIZES.POINT.width + 2 : NODE_SIZES.STANDARD.width,
+      height: d.shape === 'point' ? NODE_SIZES.POINT.height + 2 : NODE_SIZES.STANDARD.height,
       fill: 'var(--node-background-color-dark)',
       stroke: 'var(--node-stroke-color-dark)',
       strokeWidth: 'var(--node-stroke-width)'
@@ -145,11 +146,11 @@ onMounted(async () => {
     wrapAndSizeText(text, 
       (d.status ? `${d.nice_name}: ${d.status}` : d.nice_name) || '',
       {
-        fontSize: d.entity_subtype === 'cofactor' ? 14 : 16,
-        minFontSize: 5,
-        maxWidth: 120,
-        maxHeight: 50,
-        lineHeight: 1.2
+        fontSize: d.entity_subtype === 'cofactor' ? TEXT_CONFIG.FONT_SIZES.COFACTOR : TEXT_CONFIG.FONT_SIZES.STANDARD,
+        minFontSize: TEXT_CONFIG.FONT_SIZES.MIN,
+        maxWidth: TEXT_CONFIG.DIMENSIONS.MAX_WIDTH,
+        maxHeight: TEXT_CONFIG.DIMENSIONS.MAX_HEIGHT,
+        lineHeight: TEXT_CONFIG.DIMENSIONS.LINE_HEIGHT
       }
     )
   })
@@ -158,8 +159,8 @@ onMounted(async () => {
   nodes.each(function(d) {
     const nodeSel = d3.select(this)
     renderNeonEffect(nodeSel, d, {
-      width: d.shape === 'point' ? 7 : 140,
-      height: d.shape === 'point' ? 7 : 60,
+      width: d.shape === 'point' ? NODE_SIZES.POINT.width + 2 : NODE_SIZES.STANDARD.width,
+      height: d.shape === 'point' ? NODE_SIZES.POINT.height + 2 : NODE_SIZES.STANDARD.height,
       fill: 'none',
       stroke: 'white',
       strokeWidth: 'var(--node-stroke-width)'
@@ -169,7 +170,7 @@ onMounted(async () => {
   // Move centering code to after all elements are drawn
   const bounds = g.node()?.getBBox()
   if (bounds) {
-    const scale = Math.min(width / bounds.width, height / bounds.height) * 0.95  // Add small padding
+    const scale = Math.min(width / bounds.width, height / bounds.height) * LAYOUT_CONFIG.SCALE_PADDING
     const tx = (width - bounds.width * scale) / 2 - bounds.x * scale
     const ty = (height - bounds.height * scale) / 2 - bounds.y * scale
     g.attr('transform', `translate(${tx}, ${ty}) scale(${scale})`)

@@ -1,5 +1,6 @@
 import type { Selection } from 'd3'
 import type { Node, NodeShape } from '@/models/GraphData'
+import { LAYOUT_CONFIG } from '@/constants/graph'
 
 type D3Selection = Selection<any, any, any, any>
 
@@ -52,7 +53,7 @@ function renderRectangle(selection: D3Selection, config: ShapeConfig) {
         .attr('fill', config.fill)
         .attr('stroke', config.stroke)
         .attr('stroke-width', config.strokeWidth)
-        .attr('rx', 5)
+        .attr('rx', LAYOUT_CONFIG.RECTANGLE_CORNER_RADIUS)
 }
 
 function renderEllipse(selection: D3Selection, config: ShapeConfig) {
@@ -74,7 +75,7 @@ function renderOctagon(selection: D3Selection, config: ShapeConfig) {
 }
 
 function calculateOctagonPoints(width: number, height: number): string {
-    const w = width * 0.3
+    const w = width * LAYOUT_CONFIG.OCTAGON_FACTOR
     const points = [
         [-width + w, -height],
         [width - w, -height],
