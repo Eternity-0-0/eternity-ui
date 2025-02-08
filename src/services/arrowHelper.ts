@@ -39,35 +39,6 @@ function computeIntersection(x1: number, y1: number, x2: number, y2: number, nod
 }
 
 /**
- * Computes the intersection point of a line with a node shape
- */
-export function computeArrowPoint(source: Node, target: Node): Position {
-    if (!source.center || !target.center) {
-        throw new Error('Both nodes must have center positions')
-    }
-
-    const { x: x1, y: y1 } = source.center
-    const { x: x2, y: y2 } = target.center
-
-    // Translate to origin for easier calculation
-    const dx = x2 - x1
-    const dy = y2 - y1
-
-    // Get the angle of the line
-    const angle = Math.atan2(dy, dx)
-
-    switch (target.shape) {
-        case 'ellipse':
-            return computeEllipseIntersection(x1, y1, x2, y2, target.width / 2, target.height / 2)
-        case 'rectangle':
-            return computeRectangleIntersection(x1, y1, x2, y2, target.width, target.height)
-        default:
-            // For now, treat octagon as rectangle
-            return computeRectangleIntersection(x1, y1, x2, y2, target.width, target.height)
-    }
-}
-
-/**
  * Computes intersection with an ellipse
  */
 function computeEllipseIntersection(x1: number, y1: number, x2: number, y2: number, a: number, b: number): Position {
