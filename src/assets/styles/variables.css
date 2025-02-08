@@ -2,6 +2,9 @@
   --font-family: 'Lexend Deca', sans-serif;
   --body-font-family: 'Roboto', sans-serif;
 
+  /* Common */
+  --node-stroke-width: 2px;
+
   /* Light mode colors */
   --background-hexagon-color-light: #FFFFFF;
   --background_hexagon-path-light: url('@/assets/hexagons_light.svg');

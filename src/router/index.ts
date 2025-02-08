@@ -4,21 +4,16 @@ import MainView from "@/views/MainView.vue"
 
 const routes = [
     {
-        path: '/main', component: MainView
+        path: '/main', 
+        component: MainView
     },
     {
-        path: '/graph', children: [
-            {
-                path: ':graphName',
-                component: GraphView,
-                props: true
-            }
-        ]
-    },
-    {
-        path: '/wiki/:name',
+        path: '/:wikiName/:graphName',
         component: MainView,
-        props: (route: { params: { name: string } }) => ({ name: route.params.name })
+        props: (route: { params: { wikiName: string, graphName: string } }) => ({ 
+            wikiName: route.params.wikiName,
+            graphName: route.params.graphName
+        })
     }
 ]
 
