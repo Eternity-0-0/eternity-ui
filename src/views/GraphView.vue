@@ -7,7 +7,9 @@ import { resolveGraphShapes } from '@/services/resolve_graph_shapes'
 import { renderNode, renderNeonEffect } from '@/services/node_renderer'
 import { wrapAndSizeText } from '@/services/text_wrapper'
 import { setupArrowMarkers, renderEdges } from '@/services/edge_renderer'
-import { FILTER_CONFIG, TEXT_CONFIG, LAYOUT_CONFIG, NODE_SIZES } from '@/constants/graph'
+import { setupSvgDefs } from '@/services/svg_defs'
+import { centerAndScaleGraph } from '@/services/graph_layout_helper'
+import { TEXT_CONFIG, NODE_SIZES } from '@/constants/graph'
 
 const props = defineProps<{
   graphName: string
@@ -37,21 +39,8 @@ onMounted(async () => {
 
   const g = svg.append('g')
 
-  // Add definitions
-  const defs = svg.append('defs')
-
-  // Add overlay blur filter
-  const overlayFilter = defs.append('filter')
-    .attr('id', 'overlay-blur')
-    .attr('width', FILTER_CONFIG.BLUR.DIMENSIONS.width)
-    .attr('height', FILTER_CONFIG.BLUR.DIMENSIONS.height)
-    .attr('x', FILTER_CONFIG.BLUR.DIMENSIONS.x)
-    .attr('y', FILTER_CONFIG.BLUR.DIMENSIONS.y)
-  overlayFilter.append('feGaussianBlur')
-    .attr('in', 'SourceGraphic')
-    .attr('stdDeviation', FILTER_CONFIG.BLUR.STD_DEVIATION)
-
-  // Setup arrow markers
+  // Setup SVG definitions (filters, markers)
+  const defs = setupSvgDefs(svg)
   setupArrowMarkers(defs)
 
   // Draw edges
@@ -113,14 +102,8 @@ onMounted(async () => {
     })
   })
 
-  // Move centering code to after all elements are drawn
-  const bounds = g.node()?.getBBox()
-  if (bounds) {
-    const scale = Math.min(width / bounds.width, height / bounds.height) * LAYOUT_CONFIG.SCALE_PADDING
-    const tx = (width - bounds.width * scale) / 2 - bounds.x * scale
-    const ty = (height - bounds.height * scale) / 2 - bounds.y * scale
-    g.attr('transform', `translate(${tx}, ${ty}) scale(${scale})`)
-  }
+  // Center and scale the graph
+  centerAndScaleGraph(g, { width, height })
 })
 </script>
 
