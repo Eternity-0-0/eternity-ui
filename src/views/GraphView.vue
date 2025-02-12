@@ -78,6 +78,33 @@ onMounted(async () => {
       stroke: strokeColor,
       strokeWidth: 'var(--node-stroke-width)'
     })
+
+    // Add comment indicator if node has a comment
+    if (d.comment && (d.shape === 'rectangle' || d.shape === 'ellipse')) {
+      const nodeWidth = NODE_SIZES.STANDARD.width
+      const nodeHeight = NODE_SIZES.STANDARD.height
+      
+      // Calculate position on the border
+      let cx, cy
+      if (d.shape === 'rectangle') {
+        // For rectangle, position at the corner
+        cx = nodeWidth / 2
+        cy = -nodeHeight / 2
+      } else {
+        // For ellipse, position on the ellipse border at approximately 45 degrees
+        // Using parametric equation of ellipse
+        const t = Math.PI / 4  // 45 degrees
+        cx = (nodeWidth / 2) * Math.cos(t)
+        cy = -(nodeHeight / 2) * Math.sin(t)
+      }
+      
+      node.append('circle')
+        .attr('class', 'comment-indicator')
+        .attr('cx', cx)
+        .attr('cy', cy)
+        .attr('r', 4.5)  // Diameter of 9 means radius of 4.5
+        .attr('fill', 'white')
+    }
   })
 
   // Add node labels
