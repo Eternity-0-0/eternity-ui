@@ -10,12 +10,19 @@ import { setupArrowMarkers, renderEdges } from '@/services/edge_renderer'
 import { setupSvgDefs } from '@/services/svg_defs'
 import { centerAndScaleGraph } from '@/services/graph_layout_helper'
 import { TEXT_CONFIG, NODE_SIZES } from '@/constants/graph'
+import NodeComment from '@/components/graph/NodeComment.vue'
+import type { Node as GraphNode } from '@/models/GraphData'
 
 const props = defineProps<{
   graphName: string
 }>()
 
 const container = ref<HTMLElement | null>(null)
+
+// Reactive variables for node comment tooltip
+const hoverComment = ref("")
+const hoverX = ref(0)
+const hoverY = ref(0)
 
 onMounted(async () => {
   if (!container.value) return
@@ -125,7 +132,7 @@ onMounted(async () => {
       neonColor = 'var(--node-up-neon-color-dark)'
     } else if (d.direction === 'down') {
       neonColor = 'var(--node-down-neon-color-dark)'
-      neonStrokeWidth = 'calc(var(--node-stroke-width) * 1.5)'  // 50% bigger stroke for red neon
+      neonStrokeWidth = 'calc(var(--node-stroke-width) * 1.5)'
     }
     
     renderNeonEffect(nodeSel, d, {
@@ -148,12 +155,11 @@ onMounted(async () => {
       let cx, cy
       if (d.shape === 'rectangle') {
         // For rectangle, position slightly to the left of the corner
-        cx = nodeWidth / 2 - 16  // Move 8 pixels to the left from the corner
+        cx = nodeWidth / 2 - 16
         cy = -nodeHeight / 2
       } else {
         // For ellipse, position on the ellipse border at approximately 45 degrees
-        // Using parametric equation of ellipse
-        const t = Math.PI / 4  // 45 degrees
+        const t = Math.PI / 4
         cx = (nodeWidth / 2) * Math.cos(t)
         cy = -(nodeHeight / 2) * Math.sin(t)
       }
@@ -163,34 +169,63 @@ onMounted(async () => {
         .attr('class', 'comment-indicator-glow')
         .attr('cx', cx)
         .attr('cy', cy)
-        .attr('r', 3.0)  
+        .attr('r', 3.0)
         .attr('fill', 'white')
-        .style('filter', 'url(#commentGlow)')  // Glow effect
+        .style('filter', 'url(#commentGlow)')
         
       // Add the solid white circle on top
       node.append('circle')
         .attr('class', 'comment-indicator')
         .attr('cx', cx)
         .attr('cy', cy)
-        .attr('r', 3.0)  
+        .attr('r', 3.0)
         .attr('fill', 'white')
     }
   })
 
-  // Center and scale the graph
-  centerAndScaleGraph(g, { width, height })
+  const { scale, tx, ty } = centerAndScaleGraph(g, { width, height })
+
+  // Add hover event listeners for nodes with a comment to show NodeComment tooltip
+  nodes.filter((d: GraphNode) => !!d.comment)
+    .on('mouseover', function(event: MouseEvent, d: GraphNode) {
+      const nodeWidth = NODE_SIZES.STANDARD.width
+      const nodeHeight = NODE_SIZES.STANDARD.height
+      let cx: number, cy: number
+      if (d.shape === 'rectangle') {
+        cx = nodeWidth / 2 - 16
+        cy = -nodeHeight / 2
+      } else {
+        const t = Math.PI / 4
+        cx = (nodeWidth / 2) * Math.cos(t)
+        cy = -(nodeHeight / 2) * Math.sin(t)
+      }
+      hoverComment.value = d.comment!  // d.comment exists, use non-null assertion
+      hoverX.value = ((d.center && d.center.x ? d.center.x : 0) + cx) * scale + tx
+      hoverY.value = ((d.center && d.center.y ? d.center.y : 0) + cy) * scale + ty
+      console.log('Hover coordinates:', { x: hoverX.value, y: hoverY.value })
+    })
+    // .on('mouseout', function() {
+    //   hoverComment.value = ""
+    // })
 })
 </script>
 
 <template>
-  <div ref="container" class="graph-container"></div>
+  <div ref="container" class="my-graph-container">
+    <!-- NodeComment tooltip overlay -->
+    <NodeComment 
+      v-if="hoverComment"
+      :comment="hoverComment"
+      :style="{ left: hoverX + 'px', top: hoverY + 'px', position: 'absolute' }"
+    />
+  </div>
 </template>
 
 <style scoped>
-.graph-container {
+.my-graph-container {
   width: 100%;
   height: 100%;
   min-height: 100%;
-  flex: 1;
+  position: relative; /* Ensure tooltip is positioned relative to container */
 }
 </style>
