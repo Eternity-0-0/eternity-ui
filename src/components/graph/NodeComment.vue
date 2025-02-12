@@ -29,19 +29,20 @@ onMounted(() => {
 <style scoped>
 .node-comment {
   position: absolute;
-  transform: translate(calc(0% - 5px), calc(-100% + 5px));  /* Align bottom with hover point, plus 8px gap */
+  transform: translate(calc(0% - 5px), calc(-100% + 5px));
   background: var(--background-color-dark);
-  border: 1px solid var(--secondary-text-color-dark);
+  border: 2px solid var(--wiki-stroke-color-dark);
   padding: 12px 16px;
   font-size: 16px;
-  color: var(--text-color-dark);
+  color: var(--secondary-text-color-dark);
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   z-index: 10;
-  max-width: 400px;  /* Increased maximum width */
-  min-width: 200px;  /* Increased minimum width */
-  min-height: 50px;
-  line-height: 1.5;  /* Slightly increased line height */
+  min-width: 100px;  /* Fixed width for 2:3 ratio */
+  max-width: 600px;  /* Fixed width for 2:3 ratio */
+  min-height: 50px;  /* Fixed height for 2:3 ratio */
+  max-height: 400px;  /* Fixed height for 2:3 ratio */
+  line-height: 1.5;
   text-align: left;
 }
 

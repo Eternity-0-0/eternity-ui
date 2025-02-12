@@ -204,9 +204,9 @@ onMounted(async () => {
       hoverY.value = ((d.center && d.center.y ? d.center.y : 0) + cy) * scale + ty
       console.log('Hover coordinates:', { x: hoverX.value, y: hoverY.value })
     })
-    // .on('mouseout', function() {
-    //   hoverComment.value = ""
-    // })
+    .on('mouseout', function() {
+      hoverComment.value = ""
+    })
 })
 </script>
 
