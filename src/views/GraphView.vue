@@ -43,6 +43,17 @@ onMounted(async () => {
   const defs = setupSvgDefs(svg)
   setupArrowMarkers(defs)
 
+  // Add specific filter for comment indicator
+  defs.append('filter')
+    .attr('id', 'commentGlow')
+    .attr('x', '-50%')
+    .attr('y', '-50%')
+    .attr('width', '200%')
+    .attr('height', '200%')
+    .append('feGaussianBlur')
+    .attr('stdDeviation', '1')
+    .attr('result', 'coloredBlur')
+
   // Draw edges
   renderEdges(g, graphWithLayout.edges, graphWithLayout.nodes)
 
@@ -78,33 +89,6 @@ onMounted(async () => {
       stroke: strokeColor,
       strokeWidth: 'var(--node-stroke-width)'
     })
-
-    // Add comment indicator if node has a comment
-    if (d.comment && (d.shape === 'rectangle' || d.shape === 'ellipse')) {
-      const nodeWidth = NODE_SIZES.STANDARD.width
-      const nodeHeight = NODE_SIZES.STANDARD.height
-      
-      // Calculate position on the border
-      let cx, cy
-      if (d.shape === 'rectangle') {
-        // For rectangle, position at the corner
-        cx = nodeWidth / 2
-        cy = -nodeHeight / 2
-      } else {
-        // For ellipse, position on the ellipse border at approximately 45 degrees
-        // Using parametric equation of ellipse
-        const t = Math.PI / 4  // 45 degrees
-        cx = (nodeWidth / 2) * Math.cos(t)
-        cy = -(nodeHeight / 2) * Math.sin(t)
-      }
-      
-      node.append('circle')
-        .attr('class', 'comment-indicator')
-        .attr('cx', cx)
-        .attr('cy', cy)
-        .attr('r', 4.5)  // Diameter of 9 means radius of 4.5
-        .attr('fill', 'white')
-    }
   })
 
   // Add node labels
@@ -151,6 +135,46 @@ onMounted(async () => {
       stroke: neonColor,
       strokeWidth: neonStrokeWidth
     })
+  })
+
+  // Add comment indicators after neon effects
+  nodes.each(function(d) {
+    if (d.comment && (d.shape === 'rectangle' || d.shape === 'ellipse')) {
+      const node = d3.select(this)
+      const nodeWidth = NODE_SIZES.STANDARD.width
+      const nodeHeight = NODE_SIZES.STANDARD.height
+      
+      // Calculate position on the border
+      let cx, cy
+      if (d.shape === 'rectangle') {
+        // For rectangle, position slightly to the left of the corner
+        cx = nodeWidth / 2 - 16  // Move 8 pixels to the left from the corner
+        cy = -nodeHeight / 2
+      } else {
+        // For ellipse, position on the ellipse border at approximately 45 degrees
+        // Using parametric equation of ellipse
+        const t = Math.PI / 4  // 45 degrees
+        cx = (nodeWidth / 2) * Math.cos(t)
+        cy = -(nodeHeight / 2) * Math.sin(t)
+      }
+      
+      // Add the glow circle first (it will be behind)
+      node.append('circle')
+        .attr('class', 'comment-indicator-glow')
+        .attr('cx', cx)
+        .attr('cy', cy)
+        .attr('r', 3.0)  
+        .attr('fill', 'white')
+        .style('filter', 'url(#commentGlow)')  // Glow effect
+        
+      // Add the solid white circle on top
+      node.append('circle')
+        .attr('class', 'comment-indicator')
+        .attr('cx', cx)
+        .attr('cy', cy)
+        .attr('r', 3.0)  
+        .attr('fill', 'white')
+    }
   })
 
   // Center and scale the graph
