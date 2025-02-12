@@ -29,4 +29,10 @@
   --text-color-dark: #FFFFFF;
   --secondary-text-color-dark: #D0D0D0;
   --process-card-stroke-color-dark: #34495E;
+
+  /* Node direction colors - dark mode */
+  --node-up-stroke-color-dark: #41F038;
+  --node-up-neon-color-dark: #41F038;
+  --node-down-stroke-color-dark: #FF0000;
+  --node-down-neon-color-dark: #FF0000;
 }

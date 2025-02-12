@@ -99,7 +99,6 @@ export function renderNeonEffect(selection: D3Selection, node: Node, config: Sha
     const neonConfig = {
         ...config,
         fill: 'none',
-        stroke: 'white'
     }
 
     switch (node.shape) {

@@ -31,6 +31,7 @@ export class Node {
     shape: NodeShape;
     width: number;
     height: number;
+    direction?: 'up' | 'down';  // New optional direction property
 
     constructor(data: {
         id: string;
@@ -44,6 +45,7 @@ export class Node {
         shape: NodeShape;  // Now required from backend
         width?: number;
         height?: number;
+        direction?: 'up' | 'down';  // New optional direction property
     }) {
         this.id = data.id;
         this.name = data.name;
@@ -61,6 +63,7 @@ export class Node {
         this.shape = data.shape;  // Use shape directly from backend
         this.width = data.width || 140;  // Default width
         this.height = data.height || 60;  // Default height
+        this.direction = data.direction;  // Set direction if provided
     }
 }
 

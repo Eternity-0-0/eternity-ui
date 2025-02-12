@@ -57,11 +57,25 @@ onMounted(async () => {
   // Add different shapes based on node type
   nodes.each(function(d) {
     const node = d3.select(this)
+    
+    // Determine colors based on direction
+    let fillColor = 'var(--node-background-color-dark)'  // Always use default background
+    let strokeColor = 'var(--node-stroke-color-dark)'
+    let neonColor = 'white'
+    
+    if (d.direction === 'up') {
+      strokeColor = 'var(--node-up-stroke-color-dark)'
+      neonColor = 'var(--node-up-neon-color-dark)'
+    } else if (d.direction === 'down') {
+      strokeColor = 'var(--node-down-stroke-color-dark)'
+      neonColor = 'var(--node-down-neon-color-dark)'
+    }
+    
     renderNode(node, d, {
       width: d.shape === 'point' ? NODE_SIZES.POINT.width + 2 : NODE_SIZES.STANDARD.width,
       height: d.shape === 'point' ? NODE_SIZES.POINT.height + 2 : NODE_SIZES.STANDARD.height,
-      fill: 'var(--node-background-color-dark)',
-      stroke: 'var(--node-stroke-color-dark)',
+      fill: fillColor,
+      stroke: strokeColor,
       strokeWidth: 'var(--node-stroke-width)'
     })
   })
@@ -90,15 +104,25 @@ onMounted(async () => {
     )
   })
 
-  // Add neon effect overlays
+  // Update neon effect overlays with direction-based colors
   nodes.each(function(d) {
     const nodeSel = d3.select(this)
+    let neonColor = 'white'
+    let neonStrokeWidth = 'var(--node-stroke-width)'
+    
+    if (d.direction === 'up') {
+      neonColor = 'var(--node-up-neon-color-dark)'
+    } else if (d.direction === 'down') {
+      neonColor = 'var(--node-down-neon-color-dark)'
+      neonStrokeWidth = 'calc(var(--node-stroke-width) * 1.5)'  // 50% bigger stroke for red neon
+    }
+    
     renderNeonEffect(nodeSel, d, {
       width: d.shape === 'point' ? NODE_SIZES.POINT.width + 2 : NODE_SIZES.STANDARD.width,
       height: d.shape === 'point' ? NODE_SIZES.POINT.height + 2 : NODE_SIZES.STANDARD.height,
       fill: 'none',
-      stroke: 'white',
-      strokeWidth: 'var(--node-stroke-width)'
+      stroke: neonColor,
+      strokeWidth: neonStrokeWidth
     })
   })
 
