@@ -73,10 +73,16 @@ export class Node {
 export class Edge {
     source: string;
     target: string;
+    marker: 'arrow' | 't-arrow';
 
-    constructor(data: { source: string; target: string }) {
+    constructor(data: { 
+        source: string; 
+        target: string;
+        marker: 'arrow' | 't-arrow';
+    }) {
         this.source = data.source;
         this.target = data.target;
+        this.marker = data.marker;
     }
 }
 
