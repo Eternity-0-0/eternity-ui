@@ -154,7 +154,7 @@ function getOrCreateTMarker(defs: D3Selection, baseId: string, edgeId: string, r
         // Create new marker if it doesn't exist
         marker = defs.append<SVGMarkerElement>('marker')
             .attr('id', markerId)
-            .attr('viewBox', '-10 -5 20 10')
+            .attr('viewBox', '-10 -7 20 14')  // Increased height of viewBox
             .attr('refX', 0)
             .attr('refY', 0)
             .attr('markerWidth', MARKER_CONFIG.SIZE)
@@ -163,7 +163,7 @@ function getOrCreateTMarker(defs: D3Selection, baseId: string, edgeId: string, r
         console.log(rotation)
         
         marker.append('path')
-            .attr('d', 'M 0,-8 L 0,8')  // Vertical line of T
+            .attr('d', 'M 0,-12 L 0,12')  // Increased length from 8 to 12
             .attr('stroke', 'var(--edge-color-dark)')
             .attr('fill', 'none')
             .attr('stroke-width', '4')
@@ -204,8 +204,9 @@ export function renderEdges(selection: D3Selection, edges: Edge[], nodes: Node[]
                     const adjustedEnd = adjustEndPoint(points.start, points.end, 10)
                     return `M ${points.start.x},${points.start.y} L ${adjustedEnd.x},${adjustedEnd.y}`
                 }
-                // Regular arrows use the original endpoint
-                return `M ${points.start.x},${points.start.y} L ${points.end.x},${points.end.y}`
+                // Regular arrows should end slightly before the endpoint
+                const adjustedEnd = adjustEndPoint(points.start, points.end, 3)
+                return `M ${points.start.x},${points.start.y} L ${adjustedEnd.x},${adjustedEnd.y}`
             } catch (e: any) {
                 return `M ${sourceNode.center.x},${sourceNode.center.y} L ${targetNode.center.x},${targetNode.center.y}`
             }
