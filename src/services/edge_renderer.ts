@@ -62,42 +62,7 @@ function getBorderAngleAtIntersection(targetNode: Node, intersectionPoint: Posit
             tangentAngle = (Math.atan(-b * b * dx / (a * a * dy)) * 180 / Math.PI + 360) % 360;
         }
 
-
-        // Draw a tangential line for debugging
-        const tangentLineLength = 40; // Length of the tangential line
-        const tangentRad = tangentAngle * Math.PI / 180;
-        
-        // Calculate start and end points of the tangent line
-        const startPoint = {
-            x: intersectionPoint.x - Math.cos(tangentRad) * tangentLineLength / 2,
-            y: intersectionPoint.y - Math.sin(tangentRad) * tangentLineLength / 2
-        };
-        const endPoint = {
-            x: intersectionPoint.x + Math.cos(tangentRad) * tangentLineLength / 2,
-            y: intersectionPoint.y + Math.sin(tangentRad) * tangentLineLength / 2
-        };
-
-        // Get the SVG element and create/update the debug line
-        const svg = d3.select('svg');
-        const debugLineId = `tangent-${targetNode.id}`;
-        let debugLine = svg.select<SVGLineElement>(`#${debugLineId}`);
-        
-        if (debugLine.empty()) {
-            debugLine = svg.append<SVGLineElement>('line')
-                .attr('id', debugLineId)
-                .attr('class', 'debug-tangent')
-                .style('stroke', 'red')
-                .style('stroke-width', 2)
-                .style('stroke-dasharray', '4,4');
-        }
-        
-        debugLine
-            .attr('x1', startPoint.x)
-            .attr('y1', startPoint.y)
-            .attr('x2', endPoint.x)
-            .attr('y2', endPoint.y);
-        
-        return - tangentAngle;
+        return 90 - tangentAngle;
     }
     
     return 0; // Default return for other shapes
@@ -154,16 +119,15 @@ function getOrCreateTMarker(defs: D3Selection, baseId: string, edgeId: string, r
         // Create new marker if it doesn't exist
         marker = defs.append<SVGMarkerElement>('marker')
             .attr('id', markerId)
-            .attr('viewBox', '-10 -7 20 14')  // Increased height of viewBox
+            .attr('viewBox', '-10 -7 20 14')
             .attr('refX', 0)
             .attr('refY', 0)
             .attr('markerWidth', MARKER_CONFIG.SIZE)
             .attr('markerHeight', MARKER_CONFIG.SIZE)
             .attr('orient', rotation)
-        console.log(rotation)
         
         marker.append('path')
-            .attr('d', 'M 0,-12 L 0,12')  // Increased length from 8 to 12
+            .attr('d', 'M 0,-12 L 0,12')
             .attr('stroke', 'var(--edge-color-dark)')
             .attr('fill', 'none')
             .attr('stroke-width', '4')
@@ -218,26 +182,7 @@ export function renderEdges(selection: D3Selection, edges: Edge[], nodes: Node[]
             try {
                 const points = computeArrowPoints(nodes.find(n => n.id === edge.source)!, targetNode)
                 const borderAngle = getBorderAngleAtIntersection(targetNode, points.end)
-                
-                // Calculate edge angle
-                const dx = points.end.x - points.start.x;
-                const dy = points.end.y - points.start.y;
-                const edgeAngle = Math.atan2(dy, dx) * 180 / Math.PI;
-                
-                // Calculate rotation needed to make edge perpendicular to border
-                const rotationAngle = 90 - borderAngle;
-                
-                console.log(
-                    `Edge intersection:
-  From: ${edge.source}
-  To: ${targetNode.id} (${targetNode.shape})
-  Border angle: ${borderAngle.toFixed(2)}°
-  Edge angle: ${edgeAngle.toFixed(2)}°
-  Marker rotation: ${rotationAngle}°
-  Marker: ${edge.marker}
-  Intersection point: (${points.end.x.toFixed(1)}, ${points.end.y.toFixed(1)})
-  Target node center: (${targetNode.center?.x.toFixed(1)}, ${targetNode.center?.y.toFixed(1)})`
-                )
+                const rotationAngle = -borderAngle;
 
                 if (edge.marker === 't-arrow') {
                     const baseId = targetNode.entity_subtype === 'cofactor' ? 
