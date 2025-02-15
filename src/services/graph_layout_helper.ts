@@ -35,8 +35,10 @@ export function calculateGraphTransform(bounds: Bounds, viewport: ViewportDimens
  */
 export function centerAndScaleGraph(g: D3Selection, viewport: ViewportDimensions) {
     const bounds = g.node()?.getBBox()
-    if (!bounds) return
+    if (!bounds) return { scale: 1, tx: 0, ty: 0 }  // Return default values if no bounds
 
     const { scale, tx, ty } = calculateGraphTransform(bounds, viewport)
     g.attr('transform', `translate(${tx}, ${ty}) scale(${scale})`)
+
+    return { scale, tx, ty }  // Return the calculated transform values
 } 

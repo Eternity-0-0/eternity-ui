@@ -32,6 +32,7 @@ export class Node {
     width: number;
     height: number;
     direction?: 'up' | 'down';  // New optional direction property
+    comment?: string;  // Optional comment field
 
     constructor(data: {
         id: string;
@@ -46,6 +47,7 @@ export class Node {
         width?: number;
         height?: number;
         direction?: 'up' | 'down';  // New optional direction property
+        comment?: string;  // Optional comment field
     }) {
         this.id = data.id;
         this.name = data.name;
@@ -64,6 +66,7 @@ export class Node {
         this.width = data.width || 140;  // Default width
         this.height = data.height || 60;  // Default height
         this.direction = data.direction;  // Set direction if provided
+        this.comment = data.comment;  // Set comment if provided
     }
 }
 
